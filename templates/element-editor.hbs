@@ -1,0 +1,39 @@
+<form class="da-editor" autocomplete="off">
+  <label>{{localize "DA.Name"}}<input name="name" value="{{element.name}}" maxlength="100" required></label>
+  <div class="da-fields">
+    <label>{{localize "DA.Symbol"}}<input name="symbol" value="{{element.symbol}}" maxlength="12"></label>
+    <label>{{localize "DA.Order"}}<input name="order" type="number" value="{{element.order}}"></label>
+  </div>
+  <label>{{localize "DA.Icon"}}</label>
+  <div class="da-fields"><input name="icon" type="text" value="{{element.icon}}"><button type="button" class="file-picker" data-type="image" data-target="icon" title="{{localize 'DA.Browse'}}"><i class="fas fa-file-import"></i></button></div>
+  <label>{{localize "DA.Description"}}<textarea name="description" rows="3">{{element.description}}</textarea></label>
+  <fieldset><legend>{{localize "DA.DescriptivePassives"}}</legend>
+    <div data-passive-list>
+      {{#each element.passives}}
+      <div data-passive-row class="da-passive-row">
+        <input data-passive-title placeholder="{{localize 'DA.TitleField'}}" value="{{title}}" required maxlength="200">
+        <textarea data-passive-description placeholder="{{localize 'DA.Description'}}">{{description}}</textarea>
+        <button type="button" data-remove-passive>{{localize "DA.Remove"}}</button>
+      </div>
+      {{/each}}
+    </div>
+    <button type="button" data-add-passive>{{localize "DA.AddPassive"}}</button>
+  </fieldset>
+  <fieldset><legend>{{localize "DA.MechanicalPassives"}}</legend>
+    <p class="da-help">{{localize "DA.EffectHelp"}}</p>
+    <div data-effect-list>
+      {{#each sources}}<div data-effect-row class="da-effect-row"><span title="{{uuid}}">{{name}}</span><button type="button" data-remove-effect="{{uuid}}">{{localize "DA.Remove"}}</button></div>{{/each}}
+    </div>
+    <label>{{localize "DA.ExistingEffects"}}<select data-effect-choice><option value="">—</option>{{#each candidates}}<option value="{{uuid}}">{{label}}</option>{{/each}}</select></label>
+    <label>{{localize "DA.EffectUUID"}}<input data-effect-uuid type="text" placeholder="Actor.…ActiveEffect.…"></label>
+    <button type="button" data-add-effect>{{localize "DA.AddEffect"}}</button>
+  </fieldset>
+  <button type="submit"><i class="fas fa-save"></i> {{localize "DA.Save"}}</button>
+  <template data-passive-template>
+    <div data-passive-row class="da-passive-row">
+      <input data-passive-title placeholder="{{localize 'DA.TitleField'}}" required maxlength="200">
+      <textarea data-passive-description placeholder="{{localize 'DA.Description'}}"></textarea>
+      <button type="button" data-remove-passive>{{localize "DA.Remove"}}</button>
+    </div>
+  </template>
+</form>

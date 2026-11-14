@@ -1,0 +1,40 @@
+<section class="da-graph" aria-label="{{localize 'DA.Graph'}}">
+  <header class="da-toolbar">
+    <strong><i class="fas fa-atom"></i> {{localize "DA.Graph"}}</strong>
+    {{#if gm}}<button type="button" data-da-action="manager"><i class="fas fa-sliders"></i> {{localize "DA.ElementManager"}}</button>{{/if}}
+  </header>
+  <p class="da-help">{{localize "DA.GraphHelp"}}</p>
+  <div class="da-legend"><span>✓ {{localize "DA.available"}}</span><span>▣ {{localize "DA.locked"}}</span><span>? {{localize "DA.Unconfigured"}}</span></div>
+  <div class="da-network">
+    <svg class="da-connections" aria-hidden="true" preserveAspectRatio="none"></svg>
+    <div class="da-elements" aria-label="{{localize 'DA.Elements'}}">
+      {{#each elements}}
+      <button type="button" class="da-element {{#if active}}da-active{{/if}}" data-da-action="toggle" data-element-id="{{id}}" aria-pressed="{{active}}" title="{{tooltip}}" {{#unless ../editable}}disabled{{/unless}}>
+        <img src="{{icon}}" alt="" width="38" height="38"><span><strong>{{symbol}} {{name}}</strong></span><span class="da-selection-mark" aria-hidden="true">{{#if active}}✓{{else}}○{{/if}}</span>
+      </button>
+      {{else}}<p class="da-empty">{{localize "DA.NoElements"}}</p>{{/each}}
+    </div>
+    <div class="da-power-groups">
+      {{#each groups}}
+      <section class="da-power-group"><h3>{{title}}</h3><div class="da-power-grid">
+        {{#each powers}}
+        <div class="da-power da-{{state}}" data-power-id="{{id}}" data-state="{{state}}" title="{{tooltip}}">
+          <button type="button" class="da-power-icon" data-da-action="use" aria-label="{{tooltip}}" {{#unless available}}disabled{{/unless}} {{#unless ../../editable}}disabled{{/unless}}>
+            <img src="{{img}}" alt="" width="56" height="56"><span class="da-state-mark" aria-hidden="true">{{#if available}}✓{{else}}▣{{/if}}</span>
+          </button>
+          {{#if ../../showNames}}<span class="da-power-name">{{name}}</span>{{/if}}
+          <div class="da-power-tools">
+            {{#if ../../editable}}<button type="button" data-da-action="edit" title="{{localize 'DA.OpenItem'}}" aria-label="{{localize 'DA.OpenItem'}}"><i class="fas fa-edit"></i></button>{{/if}}
+            {{#if ../../gm}}<button type="button" data-da-action="configure" title="{{localize 'DA.ConfigureElements'}}" aria-label="{{localize 'DA.ConfigureElements'}}"><i class="fas fa-atom"></i></button>{{/if}}
+          </div>
+        </div>
+        {{else}}<p class="da-empty">{{localize "DA.NoPowers"}}</p>{{/each}}
+      </div></section>
+      {{/each}}
+    </div>
+  </div>
+  <section class="da-passives"><h3>{{localize "DA.ActivePassives"}}</h3>
+    {{#each passives}}<article><strong>{{#if mechanical}}<i class="fas fa-bolt"></i> {{/if}}{{title}}</strong><small>{{element}}</small><p>{{description}}</p></article>
+    {{else}}<p class="da-empty">{{localize "DA.NoActivePassives"}}</p>{{/each}}
+  </section>
+</section>

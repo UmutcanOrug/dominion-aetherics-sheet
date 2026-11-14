@@ -1,0 +1,26 @@
+<form class="da-editor" autocomplete="off">
+  {{#if invalid}}<p class="da-warning">{{localize "DA.InvalidRecipe"}}</p>{{/if}}
+  <label class="da-check"><input type="checkbox" name="configured" {{checked configured}}> {{localize "DA.Configured"}}</label>
+  <p class="da-help">{{localize "DA.RecipeHelp"}}</p>
+  <div data-recipes>
+    {{#each recipes}}
+    <fieldset data-recipe><legend>{{localize "DA.Combination"}}</legend>
+      <div class="da-checks">{{#each elements}}<label class="da-check"><input type="checkbox" data-element-id="{{id}}" {{checked selected}}> {{symbol}} {{name}}</label>{{/each}}</div>
+      <button type="button" data-remove-recipe>{{localize "DA.RemoveCombination"}}</button>
+    </fieldset>
+    {{/each}}
+  </div>
+  <button type="button" data-add-recipe>{{localize "DA.AddCombination"}}</button>
+  <fieldset><legend>{{localize "DA.Forbidden"}}</legend>
+    <div class="da-checks">{{#each forbidden}}<label class="da-check"><input type="checkbox" data-forbidden-id="{{id}}" {{checked selected}}> {{symbol}} {{name}}</label>{{/each}}</div>
+  </fieldset>
+  <label class="da-check"><input type="checkbox" name="exact" {{checked exact}}> {{localize "DA.Exact"}}</label>
+  <p class="da-help">{{localize "DA.ExactHelp"}}</p>
+  <button type="submit"><i class="fas fa-save"></i> {{localize "DA.Save"}}</button>
+  <template data-recipe-template>
+    <fieldset data-recipe><legend>{{localize "DA.Combination"}}</legend>
+      <div class="da-checks">{{#each elements}}<label class="da-check"><input type="checkbox" data-element-id="{{id}}"> {{symbol}} {{name}}</label>{{/each}}</div>
+      <button type="button" data-remove-recipe>{{localize "DA.RemoveCombination"}}</button>
+    </fieldset>
+  </template>
+</form>

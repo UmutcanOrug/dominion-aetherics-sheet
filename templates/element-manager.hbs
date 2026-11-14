@@ -1,0 +1,14 @@
+<section class="da-manager">
+  <p>{{localize "DA.RegistryHelp"}}</p>
+  <button type="button" data-create-element><i class="fas fa-plus"></i> {{localize "DA.CreateElement"}}</button>
+  <ol class="da-element-definitions">
+    {{#each elements}}
+    <li>
+      <img src="{{icon}}" alt="" width="36" height="36">
+      <span><strong>{{symbol}} {{name}}</strong><small>{{description}}</small></span>
+      <button type="button" data-edit-element="{{id}}">{{localize "DA.Edit"}}</button>
+      <button type="button" data-delete-element="{{id}}" title="{{localize 'DA.DeleteElement'}}"><i class="fas fa-trash"></i></button>
+    </li>
+    {{else}}<li>{{localize "DA.NoElements"}}</li>{{/each}}
+  </ol>
+</section>

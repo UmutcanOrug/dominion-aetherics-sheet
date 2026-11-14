@@ -1,0 +1,37 @@
+name: Release
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: node tools/fetch-reference.mjs
+      - run: npm run check
+      - run: npm test
+      - run: npm run build
+      - name: Verify tag and archive
+        run: |
+          node --input-type=module -e "import fs from 'node:fs'; const m=JSON.parse(fs.readFileSync('module.json')); if (process.env.GITHUB_REF_NAME !== 'v'+m.version) throw new Error('Tag/version mismatch');"
+          unzip -t dist/module.zip
+      - name: Publish release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "Release already exists; refusing to replace its assets."
+            exit 1
+          fi
+          title="Dominion Aetherics Sheet $GITHUB_REF_NAME"
+          if [ "$GITHUB_REF_NAME" = "v0.1.0" ]; then
+            title="$title — Initial Alpha"
+          fi
+          gh release create "$GITHUB_REF_NAME" dist/module.json dist/module.zip dist/SHA256SUMS.txt --title "$title" --notes-file "docs/RELEASE-$GITHUB_REF_NAME.md" --latest
