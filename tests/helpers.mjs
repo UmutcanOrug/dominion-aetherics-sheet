@@ -3,6 +3,7 @@ import { ElementRegistry } from "../scripts/services/registry.js";
 import { ElementSelectionService } from "../scripts/services/selections.js";
 import { PowerRequirementService } from "../scripts/services/requirements.js";
 import { PassiveEffectService } from "../scripts/services/passives.js";
+import { PowerUseService } from "../scripts/services/power-use.js";
 
 export class Collection extends Array { get(id) { return this.find(item => item.id === id); } }
 function apply(document, data) {
@@ -42,10 +43,11 @@ export const source = (uuid = "Actor.Source.ActiveEffect.cold") => ({ uuid, name
 export function setup(elements = [element("H"), element("O"), element("C"), element("Fe")]) {
   const values = new Map([["elements", { schemaVersion: 1, elements: structuredClone(elements) }], ["maxActive", 0], ["separateUnconfigured", true], ["showNames", true], ["connections", true]]);
   const user = { id: "gm", active: true, isGM: true, owner: true };
-  globalThis.game = { user, users: [user], i18n: { localize: key => key, format: (key, data) => `${key} ${JSON.stringify(data)}` }, settings: { get: (_id,key) => values.get(key), set: async (_id,key,value) => { values.set(key, structuredClone(value)); return value; } } };
+  globalThis.game = { user, users: [user], modules: new Map(), i18n: { localize: key => key, format: (key, data) => `${key} ${JSON.stringify(data)}` }, settings: { get: (_id,key) => values.get(key), set: async (_id,key,value) => { values.set(key, structuredClone(value)); return value; } } };
   const registry = new ElementRegistry(), selections = new ElementSelectionService(registry), requirements = new PowerRequirementService(registry, selections), passives = new PassiveEffectService(registry, selections);
   selections.passives = passives;
-  return { registry, selections, requirements, passives, values };
+  const powerUse = new PowerUseService(requirements);
+  return { registry, selections, requirements, passives, powerUse, values };
 }
 export const configured = (recipes, extra = {}) => ({ schemaVersion: 1, recipes, forbidden: [], exact: false, ...extra });
 export async function configure(power, recipes, extra) { await power.setFlag(ID, "requirements", configured(recipes, extra)); }

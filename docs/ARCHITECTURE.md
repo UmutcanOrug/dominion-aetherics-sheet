@@ -2,7 +2,7 @@
 
 ## Source examined
 
-No installed SWADE 5.1.0 system or live Foundry server was present in this workspace. Instead, the official exact-version source archive and the **actual distributed 5.1.0 runtime ZIP** were downloaded into ignored `.reference/` for inspection and tests. The text request was the only attachment; no screenshot was available to inspect.
+No installed SWADE 5.1.0 system or live Foundry server was present in this workspace. The official exact-version source archive and the **actual distributed 5.1.0 runtime ZIP** are used as ignored test references. For 0.2.0 the user supplied screenshots and reported that the baseline graph works in their world. The user's current SWADE Tools Fix repository was also inspected through GitHub.
 
 - [SWADE source tag v5.1.0](https://gitlab.com/peginc/swade/-/tree/v5.1.0), commit prefix `f7d20d61`.
 - [Official v5.1.0 distribution](https://gitlab.com/peginc/swade/-/releases/v5.1.0/downloads/swade-v5.1.0.zip).
@@ -10,6 +10,8 @@ No installed SWADE 5.1.0 system or live Foundry server was present in this works
 - The distribution's `system.json` declares exactly `5.1.0`; the source manifest contains a development version and is not used to infer the distributed version.
 - [Foundry V13 sheet registration API](https://foundryvtt.com/api/v13/classes/foundry.applications.apps.DocumentSheetConfig.html#registerSheet).
 - [Foundry V13 init hook](https://foundryvtt.com/api/v13/functions/hookEvents.init.html).
+- [SWADE Tools Fix 2.2.4 API wrapper](https://github.com/UmutcanOrug/swade-tools-fix/blob/24de3c15f7b9de79c0114862bd519706b58f7197/scripts/st.js), pinned commit `24de3c15f7b9de79c0114862bd519706b58f7197`.
+- `scripts/start.js` exposes `game.swadetools = st` at ready. `st.item(actor, itemId, operator, options)` opens `new ItemDialog(...)` for a Power. `scripts/class/SheetControl.js` uses this same helper; `scripts/class/ItemDialog.js` owns the casting UI.
 
 ## Verified source paths
 
@@ -37,7 +39,9 @@ The only template-related override is ApplicationV1's `_renderInner`. It first o
 
 New Actors without powers or an Arcane Background do not get a Powers tab from SWADE. On this optional sheet only, the renderer adds its nav/section and renders the installed official Powers partial to obtain Add Power and applicable PP controls. The partial is never registered globally, modified or copied into the module. A limited Actor view is left untouched. An incompatible template restores a full original system render with a visible error.
 
-Graph buttons contain no named Actor form inputs. Existing Powers stay embedded SWADE Items. A fresh availability check precedes each `item.show()` call; the system owns its ensuing chat-card, modifiers, PP, rolls, Active Effects and templates. Original Item sheets remain available even for locked/unconfigured powers. There is no global power-rule interception.
+Graph buttons contain no named Actor form inputs. Existing Powers stay embedded SWADE Items. `PowerUseService` checks ownership, Item ownership, availability and the active Tools API, then calls `game.swadetools.item(actor, item.id, null, { token })`. The exact Actor and source TokenDocument are retained, including synthetic Actors. SWADE Tools owns the casting dialog, modifiers, PP, rolls, effects and templates. If Tools is absent, disabled or not initialized, the graph reports an actionable error and never calls `item.show()` as a fallback. Original Item sheets remain accessible; there is no global rule interception or prototype patch.
+
+Each requirement-editor group has an AND/OR selector. AND compiles to one existing recipe; OR compiles to singleton alternatives. Reopening groups singleton alternatives for clarity. Mixed AND/OR groups remain an OR of AND recipes under the original schema, so old flags and availability semantics remain compatible. No Actor data migration is run. Empty OR groups are rejected; empty AND is explicitly always available subject to forbidden/exact rules.
 
 ## State and effects
 

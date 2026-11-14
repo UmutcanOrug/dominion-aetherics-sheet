@@ -3,6 +3,7 @@ import { ElementRegistry } from "./services/registry.js";
 import { ElementSelectionService } from "./services/selections.js";
 import { PowerRequirementService } from "./services/requirements.js";
 import { PassiveEffectService } from "./services/passives.js";
+import { PowerUseService } from "./services/power-use.js";
 import { ElementManagerApp } from "./apps/element-manager.js";
 import { PowerRequirementApp } from "./apps/power-requirements.js";
 import { createDominionSheet } from "./sheet.js";
@@ -54,8 +55,9 @@ function registerSheet() {
   }
   const registry = new ElementRegistry(), selections = new ElementSelectionService(registry);
   const requirements = new PowerRequirementService(registry, selections), passives = new PassiveEffectService(registry, selections);
+  const powerUse = new PowerUseService(requirements);
   selections.passives = passives;
-  services = { registry, selections, requirements, passives, openManager: () => {
+  services = { registry, selections, requirements, passives, powerUse, openManager: () => {
     assertGM(); manager ??= new ElementManagerApp(services); return manager.render(true);
   } };
   SheetClass = createDominionSheet(Base, services);

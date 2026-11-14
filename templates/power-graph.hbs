@@ -4,6 +4,7 @@
     {{#if gm}}<button type="button" data-da-action="manager"><i class="fas fa-sliders"></i> {{localize "DA.ElementManager"}}</button>{{/if}}
   </header>
   <p class="da-help">{{localize "DA.GraphHelp"}}</p>
+  {{#unless toolsReady}}<p class="da-warning">{{localize "DA.ToolsRequired"}}</p>{{/unless}}
   <div class="da-legend"><span>✓ {{localize "DA.available"}}</span><span>▣ {{localize "DA.locked"}}</span><span>? {{localize "DA.Unconfigured"}}</span></div>
   <div class="da-network">
     <svg class="da-connections" aria-hidden="true" preserveAspectRatio="none"></svg>

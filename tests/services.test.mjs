@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { ID, safeImage } from "../scripts/constants.js";
-import { evaluateRequirements, normalizeRequirements } from "../scripts/services/requirements.js";
+import { evaluateRequirements, normalizeRequirements, compileRecipeGroups, requirementsToGroups } from "../scripts/services/requirements.js";
 import { Actor, Power, Effect, setup, element, source, configured, configure } from "./helpers.mjs";
 
 test("AND recipes are inclusive; alternatives, forbidden and exact modes", () => {
@@ -14,6 +14,20 @@ test("AND recipes are inclusive; alternatives, forbidden and exact modes", () =>
   assert.equal(evaluateRequirements({ ...req, forbidden: ["Fe"] }, ["H","C","Fe"]).available, false);
   assert.equal(evaluateRequirements({ ...req, exact: true }, ["H","O","C"]).available, false);
   assert.equal(evaluateRequirements({ ...req, exact: true }, ["H","O"]).available, true);
+});
+test("explicit AND/OR groups compile to compatible recipes without changing old mixed rules", () => {
+  setup();
+  assert.deepEqual(compileRecipeGroups([{mode:"all",elements:["H","O"]}]),[["H","O"]]);
+  assert.deepEqual(compileRecipeGroups([{mode:"any",elements:["H","O"]}]),[["H"],["O"]]);
+  assert.throws(()=>compileRecipeGroups([{mode:"any",elements:[]}]));
+  assert.throws(()=>compileRecipeGroups([{mode:"script",elements:["H"]}]));
+  for (const recipes of [[["H","O"]],[["H"],["O"]],[["H","O"],["C"],["Fe"]],[[]]]) {
+    const original=configured(recipes), roundTrip=configured(compileRecipeGroups(requirementsToGroups(original)));
+    for (const active of [[],["H"],["O"],["H","O"],["C"],["Fe"],["H","C"],["H","O","Fe"]]) {
+      assert.deepEqual(evaluateRequirements(roundTrip,active),evaluateRequirements(original,active));
+      assert.deepEqual(evaluateRequirements({...roundTrip,exact:true},active),evaluateRequirements({...original,exact:true},active));
+    }
+  }
 });
 test("unconfigured, explicit always-available, and malformed data differ", () => {
   setup(); const known = new Set(["H", "O"]);

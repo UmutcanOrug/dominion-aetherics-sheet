@@ -10,7 +10,7 @@ globalThis.document = dom.window.document;
 globalThis.AbortController = dom.window.AbortController;
 globalThis.ResizeObserver = class { observe() {} disconnect() {} };
 let listenerCalls = 0, closed = 0;
-class BaseApplication { get element() { return this._element; } static get defaultOptions() { return { classes: ["swade-official","sheet","actor"], tabs: [{ initial: "summary" }], width: 700 }; } }
+class BaseApplication { activateListeners() {} get element() { return this._element; } static get defaultOptions() { return { classes: ["swade-official","sheet","actor"], tabs: [{ initial: "summary" }], width: 700 }; } }
 class BaseForm extends BaseApplication {}
 globalThis.foundry = { appv1: { api: { Application: BaseApplication, FormApplication: BaseForm }, sheets: { ActorSheet: class {} } }, utils: { mergeObject: (a,b) => ({...a,...b}) }, applications: { handlebars: {}, ux: { ContextMenu: { implementation: class { close() {} } } } } };
 const { createDominionSheet } = await import("../scripts/sheet.js");
@@ -79,13 +79,15 @@ test("new character without SWADE powers tab gets a local Powers tab using the i
   assert.equal(root.querySelectorAll('section[data-tab="powers"]').length,1); assert.equal(root.querySelectorAll('nav [data-tab="powers"]').length,1);
   assert.ok(root.querySelector('.item-create[data-type="power"]')); assert.ok(root.querySelector('.da-graph'));
 });
-test("clicking an available node calls the existing SWADE item.show once; stale locked nodes cannot cast", async () => {
+test("available node opens SWADE Tools once without a system card; stale locked nodes cannot cast", async () => {
   const { services, actor } = setupDOM(); const item = new Power(actor); await configure(item,[["H"]]); await services.selections.set(actor,["H"]);
-  let shows = 0; item.show = async () => { shows++; };
+  let shows = 0, dialogs = 0; item.show = async () => { shows++; };
+  game.modules.set("swade-tools", {active:true});
+  game.swadetools={item:async (receivedActor,id)=>{assert.equal(receivedActor,actor);assert.equal(id,item.id);dialogs++;}};
   const Sheet = createDominionSheet(OfficialSheet,services); const sheet = new Sheet(actor); const root = (await sheet._renderInner(dataFor(actor)))[0]; sheet.activateListeners([root]);
   const use = root.querySelector('[data-da-action="use"]'); assert.equal(use.disabled,false);
-  use.click(); await new Promise(resolve => setTimeout(resolve,5)); assert.equal(shows,1);
-  await services.selections.set(actor,[]); use.click(); await new Promise(resolve => setTimeout(resolve,5)); assert.equal(shows,1);
+  use.click(); await new Promise(resolve => setTimeout(resolve,5)); assert.equal(dialogs,1); assert.equal(shows,0);
+  await services.selections.set(actor,[]); use.click(); await new Promise(resolve => setTimeout(resolve,5)); assert.equal(dialogs,1); assert.equal(shows,0);
   await sheet.close();
 });
 test("owners can select elements, read-only viewers cannot and no new Actor form fields are introduced", async () => {
@@ -116,6 +118,24 @@ test("requirement editor reads OR recipes, forbidden and exact controls without 
   app.form.querySelector('[name="exact"]').checked=true;
   await app._updateObject();
   assert.deepEqual(services.requirements.get(item),{schemaVersion:1,recipes:[["H","O"]],forbidden:["Fe"],exact:true});
+});
+test("editor exposes AND/OR with a live preview and persists either element as an alternative", async () => {
+  const {services,actor}=setupDOM(); const item=new Power(actor); const app=new PowerRequirementApp(services,item);
+  const rendered=await foundry.applications.handlebars.renderTemplate("modules/dominion-aetherics-sheet/templates/power-requirements.hbs",app.getData());
+  const root=document.createElement("div"); root.innerHTML=rendered; app.form=root.querySelector("form"); app.activateListeners([root]);
+  const change=()=>root.dispatchEvent(new dom.window.Event("change",{bubbles:true}));
+  app.form.querySelector('[name="configured"]').checked=true;
+  for(const id of ["H","O"])app.form.querySelector(`[data-element-id="${id}"]`).checked=true;
+  change(); assert.match(root.querySelector('[data-requirement-preview]').textContent,/H AND O/);
+  app.form.querySelector('[data-recipe-mode]').value="any"; change();
+  assert.match(root.querySelector('[data-requirement-preview]').textContent,/H OR O/);
+  await app._updateObject(); assert.deepEqual(services.requirements.get(item).recipes,[["H"],["O"]]);
+  await services.selections.set(actor,["H"]); assert.equal(services.requirements.evaluate(actor,item).available,true);
+  await services.selections.set(actor,["O"]); assert.equal(services.requirements.evaluate(actor,item).available,true);
+  await services.selections.set(actor,[]); assert.equal(services.requirements.evaluate(actor,item).available,false);
+  const reopened=new PowerRequirementApp(services,item); assert.equal(reopened.getData().recipes[0].isAny,true);
+  root.querySelector('[data-add-recipe]').click(); assert.equal(root.querySelectorAll('[data-recipe]').length,2);
+  root.querySelectorAll('[data-remove-recipe]')[1].click(); assert.equal(root.querySelectorAll('[data-recipe]').length,1);
 });
 test("element editor saves structured descriptions and preserves the Application.element getter", async () => {
   const { services } = setupDOM(); game.actors=[]; game.items=[]; foundry.utils.randomID=()=>"NewElement";

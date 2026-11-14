@@ -35,7 +35,7 @@ export class PowerGraphRenderer {
     original.replaceChildren(controls);
     original.insertAdjacentHTML("beforeend", await foundry.applications.handlebars.renderTemplate(`${ROOT}/templates/power-graph.hbs`, {
       gm: game.user.isGM, editable: this.sheet.isEditable, elements: elementData, groups,
-      passives: this.services.passives.descriptions(actor), showNames: game.settings.get("dominion-aetherics-sheet", "showNames")
+      passives: this.services.passives.descriptions(actor), showNames: game.settings.get("dominion-aetherics-sheet", "showNames"), toolsReady: this.services.powerUse.isReady()
     }));
     this.root = original.querySelector(".da-graph");
   }
@@ -64,9 +64,8 @@ export class PowerGraphRenderer {
         if (action === "configure") return new PowerRequirementApp(this.services, item).render(true);
         if (action === "use") {
           if (!this.services.requirements.evaluate(actor, item).available) return ui.notifications.warn(t("PowerLocked"));
-          // The official sheet's .item-show handler calls this exact SWADE method.
           button.disabled = true;
-          try { await item.show(); } finally { button.disabled = false; }
+          try { await this.services.powerUse.use(actor, item, { token: this.sheet.token }); } finally { button.disabled = false; }
         }
       } catch (error) { report(error); }
     }, options);

@@ -21,6 +21,31 @@ export function evaluateRequirements(requirements, activeIds) {
   return { available: !forbidden && match, state: !forbidden && match ? "available" : "locked" };
 }
 
+/** UI groups compile to the existing OR-of-AND recipes; no flag migration is needed. */
+export function compileRecipeGroups(groups) {
+  if (!Array.isArray(groups) || !groups.length) throw new Error(t("InvalidRequirements"));
+  return groups.flatMap(group => {
+    if (!["all", "any"].includes(group.mode) || !Array.isArray(group.elements)) throw new Error(t("InvalidRequirements"));
+    if (group.mode === "any") {
+      if (!group.elements.length) throw new Error(t("AnyRequiresElement"));
+      return group.elements.map(id => [id]);
+    }
+    return [[...group.elements]];
+  });
+}
+
+export function requirementsToGroups(requirements) {
+  const recipes = requirements && !requirements.invalid ? requirements.recipes : [[]];
+  const singletons = recipes.filter(recipe => recipe.length === 1);
+  let addedAny = false;
+  return recipes.flatMap(recipe => {
+    if (recipe.length !== 1 || singletons.length < 2) return [{ mode: "all", elements: [...recipe] }];
+    if (addedAny) return [];
+    addedAny = true;
+    return [{ mode: "any", elements: [...new Set(singletons.flat())] }];
+  });
+}
+
 export class PowerRequirementService {
   constructor(registry, selections) { this.registry = registry; this.selections = selections; }
   get(item) {

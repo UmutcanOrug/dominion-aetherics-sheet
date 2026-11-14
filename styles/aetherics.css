@@ -54,6 +54,9 @@
 .da-config .da-checks { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; margin-bottom: 12px; }
 .da-config .da-check { display: flex; gap: 6px; align-items: center; }
 .da-config .da-check input { flex: 0 0 20px; }
+.da-config .da-match-mode { margin-bottom: 10px; }
+.da-config .da-requirement-preview { border-left: 3px solid #227b86; padding: 8px; margin: 0; background: #80808015; }
+.dominion-aetherics-sheet .da-graph .da-warning { border: 1px solid #b48c41; padding: 8px; font-size: 12px; }
 .da-config .da-passive-row { display: grid; grid-template-columns: 1fr auto; gap: 5px; padding-bottom: 10px; }
 .da-config .da-passive-row textarea { grid-column: 1; }
 .da-config .da-passive-row button { grid-column: 2; grid-row: 1 / 3; }
