@@ -15,7 +15,7 @@ assert.equal(manifest.relationships.recommends.find(r=>r.id==="swade-tools").man
 const repository = "https://github.com/UmutcanOrug/dominion-aetherics-sheet";
 assert.equal(manifest.manifest,`${repository}/releases/latest/download/module.json`);
 assert.equal(manifest.download,`${repository}/releases/download/v${manifest.version}/module.zip`);
-for (const file of [...manifest.esmodules,...manifest.styles,...manifest.languages.map(lang=>lang.path),"LICENSE","README.md"]) await fs.access(file);
+for (const file of [...manifest.esmodules,...manifest.styles,...manifest.languages.map(lang=>lang.path),"assets/element.svg","LICENSE","README.md"]) await fs.access(file);
 async function files(dir) {
   return (await Promise.all((await fs.readdir(dir,{withFileTypes:true})).map(entry=>entry.isDirectory()?files(path.join(dir,entry.name)):[path.join(dir,entry.name)]))).flat();
 }

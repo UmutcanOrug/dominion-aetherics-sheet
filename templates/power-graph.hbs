@@ -1,7 +1,10 @@
 <section class="da-graph" aria-label="{{localize 'DA.Graph'}}">
   <header class="da-toolbar">
     <strong><i class="fas fa-atom"></i> {{localize "DA.Graph"}}</strong>
-    {{#if gm}}<button type="button" data-da-action="manager"><i class="fas fa-sliders"></i> {{localize "DA.ElementManager"}}</button>{{/if}}
+    {{#if gm}}<div class="da-toolbar-actions">
+      <button type="button" data-da-action="manager"><i class="fas fa-sliders"></i> {{localize "DA.ElementManager"}}</button>
+      <button type="button" data-da-action="library"><i class="fas fa-book"></i> {{localize "DA.GlobalLibrary"}}</button>
+    </div>{{/if}}
   </header>
   <p class="da-help">{{localize "DA.GraphHelp"}}</p>
   {{#unless toolsReady}}<p class="da-warning">{{localize "DA.ToolsRequired"}}</p>{{/unless}}

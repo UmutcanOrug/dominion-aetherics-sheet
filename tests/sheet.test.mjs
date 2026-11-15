@@ -4,6 +4,8 @@ import fs from "node:fs/promises";
 import { JSDOM } from "jsdom";
 import Handlebars from "handlebars";
 import { Actor, Power, setup, configure } from "./helpers.mjs";
+import { DEFAULT_ICON, ID } from "../scripts/constants.js";
+import { imagePath } from "../scripts/images.js";
 
 const dom = new JSDOM("<!DOCTYPE html><html><body></body></html>");
 globalThis.document = dom.window.document;
@@ -17,6 +19,8 @@ const { createDominionSheet } = await import("../scripts/sheet.js");
 const { PowerGraphRenderer } = await import("../scripts/graph.js");
 const { PowerRequirementApp } = await import("../scripts/apps/power-requirements.js");
 const { ElementEditorApp } = await import("../scripts/apps/element-manager.js");
+const { ElementManagerApp } = await import("../scripts/apps/element-manager.js");
+const { GlobalLibraryApp } = await import("../scripts/apps/global-library.js");
 const english = JSON.parse(await fs.readFile(new URL("../lang/en.json",import.meta.url),"utf8"));
 const translate = key => key.split(".").reduce((obj,part) => obj?.[part],english) ?? key;
 Handlebars.registerHelper("localize",translate);
@@ -181,4 +185,92 @@ test("incompatible Powers DOM restores the full original render", async () => {
   const originalConsole=console.error; console.error=()=>{};
   try { const root=(await sheet._renderInner(dataFor(actor)))[0]; assert.match(root.textContent,/Unexpected third-party markup/); assert.equal(calls,2); assert.equal(root.querySelector('.da-graph'),null); }
   finally { console.error=originalConsole; }
+});
+
+test("rerender skips unopened context menus and awaits an open menu's non-animated close exactly once", async () => {
+  const { services, actor } = setupDOM(); new Power(actor);
+  let closes = 0, closeFinished = false;
+  const previous = foundry.applications.ux.ContextMenu.implementation;
+  foundry.applications.ux.ContextMenu.implementation = class {
+    async close(options) {
+      closes++;
+      assert.equal(options.animate, false); assert.equal(options.target, this.target);
+      if (!this.element) throw new TypeError("Cannot read properties of undefined (reading getBoundingClientRect)");
+      await new Promise(resolve => setTimeout(resolve, 5)); this.element.remove(); closeFinished = true;
+    }
+  };
+  const Sheet = createDominionSheet(OfficialSheet, services), sheet = new Sheet(actor);
+  try {
+    let root = (await sheet._renderInner(dataFor(actor)))[0]; sheet.activateListeners([root]);
+    root = (await sheet._renderInner(dataFor(actor)))[0]; assert.equal(closes, 0); sheet.activateListeners([root]);
+    const graph = sheet._dominionGraph; graph.menu.target = root.querySelector("[data-power-id]"); graph.menu.element = document.createElement("menu"); document.body.append(graph.menu.element);
+    await sheet._renderInner(dataFor(actor)); assert.equal(closes, 1); assert.equal(closeFinished, true);
+    await graph.dispose(); assert.equal(closes, 1);
+  } finally { await sheet.close(); foundry.applications.ux.ContextMenu.implementation = previous; }
+});
+
+test("dispose never closes a different window's context menu and handles close rejection", async () => {
+  const { services, actor } = setupDOM(); const graph = new PowerGraphRenderer({ actor }, services);
+  graph.root = document.createElement("div"); let calls = 0;
+  graph.menu = { target: document.createElement("button"), element: document.createElement("menu"), close: () => { calls++; } };
+  await graph.dispose(); assert.equal(calls, 0);
+  graph.root = document.createElement("div"); const target = document.createElement("button"); graph.root.append(target);
+  graph.menu = { target, element: document.createElement("menu"), close: async () => { throw new Error("custom-menu-rejected"); } };
+  const previous = console.error, before = errors.length; console.error = () => {};
+  try { await assert.doesNotReject(graph.dispose()); assert.equal(errors.length, before + 1); }
+  finally { console.error = previous; }
+});
+
+test("graph displays only the Actor's assigned elements and provides separate library/assignment buttons", async () => {
+  const { services, actor } = setupDOM(); actor.flags[ID].assignedElements = ["H"];
+  let managerActor, libraryActor; services.openManager = actor => { managerActor = actor; }; services.openLibrary = actor => { libraryActor = actor; };
+  const Sheet = createDominionSheet(OfficialSheet, services), sheet = new Sheet(actor);
+  const root = (await sheet._renderInner(dataFor(actor)))[0]; sheet.activateListeners([root]);
+  assert.deepEqual([...root.querySelectorAll(".da-element")].map(button => button.dataset.elementId), ["H"]);
+  root.querySelector('[data-da-action="manager"]').click(); root.querySelector('[data-da-action="library"]').click();
+  assert.equal(managerActor, actor); assert.equal(libraryActor, actor);
+  await sheet.close();
+});
+
+test("Element Manager saves grants only to its target and Global Library keeps all definitions", async () => {
+  const { services, actor } = setupDOM(); actor.flags[ID].assignedElements = [];
+  const other = new Actor("Actor.Other"); const before = structuredClone(other.flags);
+  const app = new ElementManagerApp(services, actor);
+  const markup = await foundry.applications.handlebars.renderTemplate("modules/dominion-aetherics-sheet/templates/element-manager.hbs", app.getData());
+  const root = document.createElement("div"); root.innerHTML = markup; app.form = root.querySelector("form");
+  app.form.querySelector('[data-assigned-id="H"]').checked = true; await app._updateObject();
+  assert.deepEqual(services.assignments.getIds(actor), ["H"]); assert.deepEqual(other.flags, before);
+  const library = new GlobalLibraryApp(services, actor); const data = library.getData();
+  assert.equal(data.elements.length, 4); assert.equal(data.hasActor, true);
+  const rendered = await foundry.applications.handlebars.renderTemplate("modules/dominion-aetherics-sheet/templates/global-library.hbs", data);
+  assert.match(rendered, /data-library-action="create-element"/); assert.match(rendered, /data-library-action="create-power"/);
+});
+
+test("legacy atom icon and missing images get a bundled display fallback without editing document data", async () => {
+  const { services, actor } = setupDOM(); const item = new Power(actor); item.img = "assets/dominion/direktuvar/disciple-test.jpg";
+  const before = item.img, Sheet = createDominionSheet(OfficialSheet, services), sheet = new Sheet(actor);
+  const root = (await sheet._renderInner(dataFor(actor)))[0]; sheet.activateListeners([root]);
+  assert.equal(root.querySelector(".da-element img").getAttribute("src"), DEFAULT_ICON);
+  const image = root.querySelector(".da-power img"); image.dispatchEvent(new dom.window.Event("error"));
+  assert.equal(image.getAttribute("src"), DEFAULT_ICON); assert.equal(item.img, before); assert.equal(imagePath(before), DEFAULT_ICON);
+  image.dispatchEvent(new dom.window.Event("error")); assert.equal(image.getAttribute("src"), DEFAULT_ICON);
+  await sheet.close();
+});
+
+test("Global Library controls create global Powers and add them only to the contextual Actor", async () => {
+  const { services, actor } = setupDOM(); const app = new GlobalLibraryApp(services, actor);
+  let createName, addedActor, addedPower, renders = 0;
+  const power = { id: "global-power", name: "Global Water", type: "power", img: DEFAULT_ICON, actor: null };
+  game.items.push(power);
+  services.powerLibrary.create = async name => { createName = name; return { sheet: { render: () => { renders++; } } }; };
+  services.powerLibrary.addToActor = async (target, item) => { addedActor = target; addedPower = item; };
+  app.render = () => { renders++; return app; };
+  const markup = await foundry.applications.handlebars.renderTemplate("modules/dominion-aetherics-sheet/templates/global-library.hbs", app.getData());
+  const root = document.createElement("div"); root.innerHTML = markup; app.activateListeners([root]);
+  root.querySelector("[data-power-name]").value = "Water Template";
+  root.querySelector('[data-library-action="create-power"]').click();
+  await new Promise(resolve => setTimeout(resolve, 5)); assert.equal(createName, "Water Template");
+  root.querySelector('[data-library-action="add-power"]').click();
+  await new Promise(resolve => setTimeout(resolve, 5)); assert.equal(addedActor, actor); assert.equal(addedPower, power);
+  root.querySelector('[data-library-tab="powers"]').click(); assert.equal(app.libraryTab, "powers"); assert.ok(renders >= 3);
 });

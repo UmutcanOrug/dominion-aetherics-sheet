@@ -38,6 +38,13 @@ test("registration is opt-in for characters and NPCs and preserves all official 
   assert.deepEqual(CONFIG.Actor.sheetClasses,{character:"swade.CharacterSheet",npc:"swade.SwadeNPCSheet"});
   assert.equal(CONFIG.Actor.sheetClasses,officialDefaults);
   assert.ok(Object.isFrozen(module.api)); assert.equal(typeof module.api.setActiveElements,"function");
+  assert.equal(typeof module.api.openGlobalLibrary,"function");assert.equal(typeof module.api.setAssignedElements,"function");
+  const actor=new Actor("Actor.Fresh",{assigned:[]});actor.flags={};
+  assert.deepEqual(module.api.getAssignedElements(actor),[]);
+  await module.api.setAssignedElements(actor,["H"]);await module.api.setActiveElements(actor,["H"]);
+  assert.deepEqual(module.api.getActiveElements(actor),["H"]);
+  await assert.rejects(module.api.setActiveElements(actor,["O"]),/ElementNotAssigned/);
+  game.user.isGM=false;assert.throws(()=>module.api.setAssignedElements(actor,["O"]),/GMOnly/);game.user.isGM=true;
   game.system.version="5.2.0"; callbacks.get("init")(); assert.equal(registrations.length,1);
 });
 
@@ -46,16 +53,17 @@ test("ready and registry changes reconcile NPC Extras and unlinked NPC Wild Card
   const npc=new Actor("Actor.NPC");npc.type="npc";npc.system.wildcard=false;
   const base=new Actor("Actor.BaseNPC");base.type="npc";base.system.wildcard=true;
   const synthetic=new Actor("Scene.S.Token.T.Actor.BaseNPC");synthetic.type="npc";synthetic.system.wildcard=true;synthetic.isToken=true;
-  const untouched=new Actor("Actor.UntouchedNPC");untouched.type="npc";
+  const untouched=new Actor("Actor.UntouchedNPC");untouched.type="npc";untouched.flags={};
   const vehicle=new Actor("Actor.Vehicle");vehicle.type="vehicle";
   const unrelated=new Effect({id:"unrelated",name:"Unrelated"});npc.effects.push(unrelated);
   for(const actor of [npc,synthetic,vehicle])actor.flags[ID]={schemaVersion:1,activeElements:["H","deleted"]};
-  base.flags[ID]={schemaVersion:1,activeElements:["O"]};
+  base.flags[ID]={schemaVersion:1,assignedElements:["O"],activeElements:["O"]};
   const token={actorLink:false,actor:synthetic};
   game.actors=[npc,base,untouched,vehicle];game.scenes=[{tokens:[token]}];
   callbacks.get("ready")();
   await until(()=>npc.effects.length===2&&synthetic.effects.length===1);
   assert.deepEqual(npc.flags[ID].activeElements,["H"]);assert.deepEqual(synthetic.flags[ID].activeElements,["H"]);
+  assert.deepEqual(npc.flags[ID].assignedElements,["H"]);assert.deepEqual(synthetic.flags[ID].assignedElements,["H"]);
   assert.deepEqual(base.flags[ID].activeElements,["O"]);assert.equal(base.updates.length,0);assert.equal(base.effects.length,0);
   assert.equal(untouched.updates.length,0);assert.equal(untouched.getFlag(ID,"activeElements"),undefined);
   assert.equal(vehicle.updates.length,0);assert.deepEqual(vehicle.flags[ID].activeElements,["H","deleted"]);
@@ -63,8 +71,8 @@ test("ready and registry changes reconcile NPC Extras and unlinked NPC Wild Card
   await until(()=>npc.effects.length===1&&synthetic.effects.length===0);
   assert.equal(npc.effects[0],unrelated);assert.deepEqual(npc.flags[ID].activeElements,[]);assert.deepEqual(synthetic.flags[ID].activeElements,[]);
   values.set("elements",{schemaVersion:1,elements:[element("H",[source()]),element("O")]});
-  npc.flags[ID].activeElements=["H"];events.get("updateActor")(npc,{flags:{[ID]:{activeElements:["H"]}}});
-  synthetic.flags[ID].activeElements=["H"];events.get("updateToken")(token);
+  npc.flags[ID].assignedElements=["H"];npc.flags[ID].activeElements=["H"];events.get("updateActor")(npc,{flags:{[ID]:{activeElements:["H"]}}});
+  synthetic.flags[ID].assignedElements=["H"];synthetic.flags[ID].activeElements=["H"];events.get("updateToken")(token);
   await until(()=>npc.effects.length===2&&synthetic.effects.length===1);
   assert.equal(base.effects.length,0);assert.equal(base.updates.length,0);
 });

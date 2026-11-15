@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0 — 2026-11-15
+
+- Fix V13 ContextMenu cleanup on sheet rerender: skip unopened menus, close only the current graph's menu without animation and await its Promise.
+- Bundle an original element SVG; replace legacy atom paths in the view and show cached fallbacks for missing custom images without changing document paths.
+- Add a GM Global Library beside Element Manager in Powers, with element definitions and native world Power templates, creation/import/editing and explicit copy-to-Actor.
+- Change Element Manager to per-Actor element assignments. New definitions do not appear on every sheet; owners activate only granted IDs.
+- Preserve only legacy saved active elements as initial assignments; new Actors start empty. Grant revocation reconciles only the target Actor's managed effects.
+- Retain NPC/Wild Card support, AND/OR rules, original sheet controls and SWADE Tools dispatch.
+- 53 automated tests, including menu regression, images, assignments, library copies and contextual UI wiring.
+
 ## 0.2.1 — 2026-11-15
 
 - Fix optional sheet registration for NPCs, including both NPC Extras and NPC Wild Cards.

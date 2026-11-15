@@ -1,6 +1,7 @@
 export const ID = "dominion-aetherics-sheet";
 export const SCHEMA = 1;
 export const ROOT = `modules/${ID}`;
+export const DEFAULT_ICON = `${ROOT}/assets/element.svg`;
 export const SUPPORTED_ACTOR_TYPES = Object.freeze(["character", "npc"]);
 export const t = (key, data) => data ? game.i18n.format(`DA.${key}`, data) : game.i18n.localize(`DA.${key}`);
 export const clone = value => structuredClone(value);
@@ -32,7 +33,7 @@ export function queueFor(map, key, operation) {
 }
 export function safeImage(value) {
   const path = String(value ?? "").trim();
-  if (!path) return "icons/svg/atom.svg";
+  if (!path || path === "icons/svg/atom.svg") return DEFAULT_ICON;
   if (/^(?:https?:\/\/|[^:/\\]+[\/\\])/i.test(path) && !/["'<>\x00-\x1f]/.test(path)) return path;
   throw new Error(t("InvalidImage"));
 }

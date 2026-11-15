@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import { zipSync, unzipSync } from "fflate";
 import "./check.mjs";
 
-const roots=["module.json","scripts","templates","styles","lang","README.md","LICENSE","CHANGELOG.md","docs"];
+const roots=["module.json","assets","scripts","templates","styles","lang","README.md","LICENSE","CHANGELOG.md","docs"];
 const entries={};
 async function add(file) {
   const stat=await fs.stat(file);
@@ -16,6 +16,7 @@ for(const file of roots)await add(file);
 const zip=zipSync(entries,{level:9});
 const unpacked=unzipSync(zip);
 assert.ok(unpacked["module.json"]);
+assert.ok(unpacked["assets/element.svg"], "Bundled fallback icon must be installable");
 assert.equal(JSON.parse(new TextDecoder().decode(unpacked["module.json"])).id,"dominion-aetherics-sheet");
 for(const name of Object.keys(unpacked))assert.ok(!name.startsWith(".")&&!/node_modules|\.reference|package-lock|tests\//.test(name));
 await fs.mkdir("dist",{recursive:true});

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { ID, safeImage } from "../scripts/constants.js";
+import { ID, DEFAULT_ICON, safeImage } from "../scripts/constants.js";
 import { evaluateRequirements, normalizeRequirements, compileRecipeGroups, requirementsToGroups } from "../scripts/services/requirements.js";
 import { Actor, Power, Effect, setup, element, source, configured, configure } from "./helpers.mjs";
 
@@ -149,5 +149,5 @@ test("registry clones reads, serializes saves, and validates definitions", async
   await Promise.all([registry.save(element("X")),registry.save(element("Y"))]); assert.equal(registry.get().length,6);
   assert.throws(() => registry.save({ ...element("Z"), name: "" }));
   for (const bad of ["javascript:alert(1)","data:image/svg+xml,evil",'https://example.com/" onerror="bad']) assert.throws(() => safeImage(bad));
-  assert.equal(safeImage("icons/svg/atom.svg"),"icons/svg/atom.svg");
+  assert.equal(safeImage("icons/svg/atom.svg"),DEFAULT_ICON);
 });

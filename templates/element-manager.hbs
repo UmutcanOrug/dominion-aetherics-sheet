@@ -1,14 +1,12 @@
-<section class="da-manager">
-  <p>{{localize "DA.RegistryHelp"}}</p>
-  <button type="button" data-create-element><i class="fas fa-plus"></i> {{localize "DA.CreateElement"}}</button>
+<form class="da-manager" autocomplete="off">
+  <p>{{localize "DA.AssignmentHelp"}} <strong>{{actorName}}</strong></p>
+  <button type="button" data-open-library><i class="fas fa-book"></i> {{localize "DA.GlobalLibrary"}}</button>
   <ol class="da-element-definitions">
-    {{#each elements}}
-    <li>
+    {{#each elements}}<li>
+      <input type="checkbox" data-assigned-id="{{id}}" aria-label="{{name}}" {{checked assigned}}>
       <img src="{{icon}}" alt="" width="36" height="36">
       <span><strong>{{symbol}} {{name}}</strong><small>{{description}}</small></span>
-      <button type="button" data-edit-element="{{id}}">{{localize "DA.Edit"}}</button>
-      <button type="button" data-delete-element="{{id}}" title="{{localize 'DA.DeleteElement'}}"><i class="fas fa-trash"></i></button>
-    </li>
-    {{else}}<li>{{localize "DA.NoElements"}}</li>{{/each}}
+    </li>{{else}}<li>{{localize "DA.NoLibraryElements"}}</li>{{/each}}
   </ol>
-</section>
+  <button type="submit"><i class="fas fa-save"></i> {{localize "DA.SaveAssignments"}}</button>
+</form>

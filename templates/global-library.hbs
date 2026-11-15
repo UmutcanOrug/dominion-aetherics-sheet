@@ -1,0 +1,35 @@
+<section class="da-library">
+  <p>{{localize "DA.LibraryHelp"}}</p>
+  <nav class="da-library-tabs">
+    <button type="button" data-library-tab="elements" aria-pressed="{{elementsTab}}">{{localize "DA.Elements"}}</button>
+    <button type="button" data-library-tab="powers" aria-pressed="{{powersTab}}">{{localize "DA.Powers"}}</button>
+  </nav>
+  <section class="da-library-pane" {{#unless elementsTab}}hidden{{/unless}}>
+    <button type="button" data-library-action="create-element"><i class="fas fa-plus"></i> {{localize "DA.CreateElement"}}</button>
+    <ol class="da-element-definitions">
+      {{#each elements}}<li>
+        <img src="{{icon}}" alt="" width="36" height="36"><span><strong>{{symbol}} {{name}}</strong><small>{{description}}</small></span>
+        <button type="button" data-library-action="edit-element" data-id="{{id}}">{{localize "DA.Edit"}}</button>
+        <button type="button" data-library-action="delete-element" data-id="{{id}}" title="{{localize 'DA.DeleteElement'}}"><i class="fas fa-trash"></i></button>
+      </li>{{else}}<li>{{localize "DA.NoLibraryElements"}}</li>{{/each}}
+    </ol>
+  </section>
+  <section class="da-library-pane" {{#unless powersTab}}hidden{{/unless}}>
+    {{#if hasActor}}<p>{{localize "DA.LibraryActor"}}: <strong>{{actorName}}</strong></p>{{/if}}
+    <div class="da-fields"><input data-power-name type="text" maxlength="100" placeholder="{{localize 'DA.Name'}}"><button type="button" data-library-action="create-power">{{localize "DA.CreatePower"}}</button></div>
+    <details class="da-library-import"><summary>{{localize "DA.ImportPower"}}</summary>
+      <label>{{localize "DA.ExistingActorPowers"}}<select data-power-choice><option value="">—</option>{{#each candidates}}<option value="{{uuid}}">{{label}}</option>{{/each}}</select></label>
+      <label>{{localize "DA.PowerUUID"}}<input data-power-uuid type="text" placeholder="Actor.…Item.… / Compendium.…"></label>
+      <button type="button" data-library-action="import-power">{{localize "DA.ImportPower"}}</button>
+    </details>
+    <ol class="da-element-definitions">
+      {{#each powers}}<li>
+        <img src="{{img}}" alt="" width="36" height="36"><span><strong>{{name}}</strong></span>
+        <button type="button" data-library-action="edit-power" data-id="{{id}}">{{localize "DA.Edit"}}</button>
+        <button type="button" data-library-action="configure-power" data-id="{{id}}" title="{{localize 'DA.ConfigureElements'}}"><i class="fas fa-atom"></i></button>
+        {{#if ../hasActor}}<button type="button" data-library-action="add-power" data-id="{{id}}">{{localize "DA.AddToActor"}}</button>{{/if}}
+        <button type="button" data-library-action="delete-power" data-id="{{id}}" title="{{localize 'DA.DeletePower'}}"><i class="fas fa-trash"></i></button>
+      </li>{{else}}<li>{{localize "DA.NoLibraryPowers"}}</li>{{/each}}
+    </ol>
+  </section>
+</section>

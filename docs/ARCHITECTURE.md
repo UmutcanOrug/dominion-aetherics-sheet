@@ -43,18 +43,31 @@ New Actors without powers or an Arcane Background do not get a Powers tab from S
 
 Graph buttons contain no named Actor form inputs. Existing Powers stay embedded SWADE Items. `PowerUseService` checks ownership, Item ownership, availability and the active Tools API, then calls `game.swadetools.item(actor, item.id, null, { token })`. The exact Actor and source TokenDocument are retained, including synthetic Actors. SWADE Tools owns the casting dialog, modifiers, PP, rolls, effects and templates. If Tools is absent, disabled or not initialized, the graph reports an actionable error and never calls `item.show()` as a fallback. Original Item sheets remain accessible; there is no global rule interception or prototype patch.
 
-Each requirement-editor group has an AND/OR selector. AND compiles to one existing recipe; OR compiles to singleton alternatives. Reopening groups singleton alternatives for clarity. Mixed AND/OR groups remain an OR of AND recipes under the original schema, so old flags and availability semantics remain compatible. No Actor data migration is run. Empty OR groups are rejected; empty AND is explicitly always available subject to forbidden/exact rules.
+Each requirement-editor group has an AND/OR selector. AND compiles to one existing recipe; OR compiles to singleton alternatives. Reopening groups singleton alternatives for clarity. Mixed AND/OR groups remain an OR of AND recipes under the original schema, so old flags and recipe semantics remain compatible. Actor assignments are initialized separately as described below. Empty OR groups are rejected; empty AND is explicitly always available subject to forbidden/exact rules.
+
+## Global library, assignments and cleanup (0.3.0)
+
+`GlobalLibraryApp` is a GM-only world catalog, opened beside Element Manager in Powers or through `api.openGlobalLibrary(actor?)`. Its elements use the existing registry. Power templates are native world SWADE Item documents. `PowerLibraryService` creates templates, copies embedded/compendium sources by UUID, and copies a template only to the contextual Actor on explicit request. UUID flags prevent repeat import/grant duplicates. Actor Items are independent of later template edits/deletion.
+
+`ElementManagerApp` is now a contextual GM FormApplication that writes only the selected Actor's `assignedElements`. Graph nodes and selection validation enforce this subset. Assignment and selection mutations share one Actor queue; revoked active assignments reconcile only module-managed passives. New global definitions never grant themselves to an Actor.
+
+The requirements schema remains version 1. A missing assignment flag uses only that Actor's saved valid active IDs as a legacy initial set. Ready reconciliation or the first selection mutation persists that set, so later deactivation does not erase the grant. Actors without module flags remain untouched. A wholly new Actor has no assigned elements. This initializes assignments without changing SWADE data or existing Power recipes.
+
+`PowerGraphRenderer.dispose()` is asynchronous. It aborts listeners/disconnects the observer, then closes only its own open menu with `close({animate:false,target})`, awaiting completion before DOM replacement. Never-opened, already-closed and other-window targets are skipped. This follows the [V13 ContextMenu close API](https://foundryvtt.com/api/v13/classes/foundry.applications.ux.ContextMenu.html#close) and removes the reported animation access to a missing menu element.
+
+The bundled original SVG supplies the default icon. Legacy atom paths and failed image loads get a display-only fallback. The full Dominion form's image error listener includes its retained portrait, while source document paths stay unchanged. Failed custom paths are cached per client session; reloading retries repaired assets. A missing Forge image can still log its first 404 and must be repaired in Asset Library.
 
 ## State and effects
 
 - Registry: world setting `dominion-aetherics-sheet.elements`, `{ schemaVersion: 1, elements: [...] }`.
 - Selection: Actor flags `activeElements` and `schemaVersion` in the module namespace; stable IDs only.
+- Assignments: `assignedElements`, independently stored on each base or synthetic Actor; GM APIs only grant valid registry IDs.
 - Recipes: Item flag `requirements`, structured AND/OR arrays plus `forbidden` and `exact`.
 - Module-managed effect flags: `managed`, `schemaVersion`, `actorUuid`, `sourceUuid`, `providers`, `signature`.
 - GM-approved source snapshots contain existing Active Effect data, not invented SWADE property names. Copies are Actor-owned, non-transferring, enabled, and indefinite while selected. `duration` is reset and the verified nullable `system.expiration` is cleared. Source documents are never mutated.
 - The same source UUID has one desired copy per Actor with a provider list. Removing one provider retains it. Unrelated effects without the module's marker are never removed, even if their name/origin matches.
 - Background reconciliation elects one active GM, falling back to the first active owner. Queues serialize local changes and effect reconciliation. No untrusted socket command or executable user expression is used.
-- Reconciliation scans only Actors already containing selection state or managed effects. Official-sheet Actors with no module data receive no updates. Base Actors and unlinked synthetic Actors are kept separate by UUID.
+- Reconciliation scans only Actors already containing assignments, selection state or managed effects. Official-sheet Actors with no module data receive no updates. Base Actors and unlinked synthetic Actors are kept separate by UUID.
 - Duplicate Actors' managed copies are adopted into the new Actor's tracking; original Actors remain untouched.
 
 ## Compatibility limits

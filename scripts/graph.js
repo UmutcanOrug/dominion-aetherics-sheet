@@ -1,5 +1,6 @@
 import { ROOT, report, t } from "./constants.js";
 import { PowerRequirementApp } from "./apps/power-requirements.js";
+import { bindImageFallbacks, imagePath } from "./images.js";
 
 export class PowerGraphRenderer {
   constructor(sheet, services) { this.sheet = sheet; this.services = services; }
@@ -25,13 +26,13 @@ export class PowerGraphRenderer {
     const active = new Set(this.services.selections.get(actor));
     const powers = actor.items.filter(i => i.type === "power").sort((a,b) => a.sort - b.sort || a.name.localeCompare(b.name)).map(item => {
       const result = this.services.requirements.evaluate(actor, item);
-      return { id: item.id, name: item.name, img: item.img, state: result.state, available: result.available,
+      return { id: item.id, name: item.name, img: imagePath(item.img), state: result.state, available: result.available,
         tooltip: `${item.name} — ${this.services.requirements.describe(item)} — ${t(result.state)}` };
     });
     const separate = game.settings.get("dominion-aetherics-sheet", "separateUnconfigured");
     const groups = [{ title: t("Powers"), powers: separate ? powers.filter(p => p.state !== "unconfigured") : powers }];
     if (separate && powers.some(p => p.state === "unconfigured")) groups.push({ title: t("Unconfigured"), powers: powers.filter(p => p.state === "unconfigured") });
-    const elementData = this.services.registry.get().map(e => ({ ...e, active: active.has(e.id), tooltip: `${e.name}${e.description ? ` — ${e.description}` : ""}` }));
+    const elementData = this.services.assignments.get(actor).map(e => ({ ...e, icon: imagePath(e.icon), active: active.has(e.id), tooltip: `${e.name}${e.description ? ` — ${e.description}` : ""}` }));
     original.replaceChildren(controls);
     original.insertAdjacentHTML("beforeend", await foundry.applications.handlebars.renderTemplate(`${ROOT}/templates/power-graph.hbs`, {
       gm: game.user.isGM, editable: this.sheet.isEditable, elements: elementData, groups,
@@ -39,18 +40,20 @@ export class PowerGraphRenderer {
     }));
     this.root = original.querySelector(".da-graph");
   }
-  bind() {
+  bind(sheetRoot = this.root) {
     if (!this.root) return;
     const root = this.root, actor = this.sheet.actor;
     this.abort = new AbortController();
     const options = { signal: this.abort.signal };
+    bindImageFallbacks(sheetRoot, options);
     root.addEventListener("click", async event => {
       const button = event.target.closest("[data-da-action]");
       if (!button) return;
       event.preventDefault();
       try {
         const action = button.dataset.daAction;
-        if (action === "manager") return this.services.openManager();
+        if (action === "manager") return this.services.openManager(actor);
+        if (action === "library") return this.services.openLibrary(actor);
         if (action === "toggle") {
           if (!this.sheet.isEditable) return;
           button.disabled = true;
@@ -60,7 +63,7 @@ export class PowerGraphRenderer {
         }
         const item = actor.items.get(button.closest("[data-power-id]").dataset.powerId);
         if (!item || !this.sheet.isEditable) return;
-        if (action === "edit") return item.sheet.render(true);
+        if (action === "edit") return await item.sheet.render(true);
         if (action === "configure") return new PowerRequirementApp(this.services, item).render(true);
         if (action === "use") {
           if (!this.services.requirements.evaluate(actor, item).available) return ui.notifications.warn(t("PowerLocked"));
@@ -120,5 +123,14 @@ export class PowerGraphRenderer {
       }
     }
   }
-  dispose() { this.abort?.abort(); this.resize?.disconnect(); this.menu?.close(); this.root = null; }
+  async dispose() {
+    this.abort?.abort(); this.resize?.disconnect();
+    const root = this.root, menu = this.menu;
+    this.root = null; this.menu = null; this.focus = null;
+    // V13 close() animates by default, even when this instance has never opened a menu.
+    // Close only our open target, before its DOM is replaced, without layout animation.
+    if (!menu?.element || !menu.target || !root?.contains(menu.target)) return;
+    try { await menu.close({ animate: false, target: menu.target }); }
+    catch (error) { report(error); }
+  }
 }

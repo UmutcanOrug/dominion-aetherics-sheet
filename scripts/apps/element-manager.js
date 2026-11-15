@@ -1,34 +1,39 @@
-import { ROOT, assertGM, clone, report, t } from "../constants.js";
+import { ID, ROOT, DEFAULT_ICON, assertActor, assertGM, clone, report, t } from "../constants.js";
+import { bindImageFallbacks, imagePath } from "../images.js";
 
-export class ElementManagerApp extends foundry.appv1.api.Application {
-  constructor(services, options = {}) { super(options); this.services = services; }
-  static get defaultOptions() {
-    return foundry.utils.mergeObject(super.defaultOptions, { id: "dominion-element-manager", classes: ["da-config"], title: "Dominion Aetherics", template: `${ROOT}/templates/element-manager.hbs`, width: 640, height: "auto", resizable: true });
+export class ElementManagerApp extends foundry.appv1.api.FormApplication {
+  constructor(services, actor, options = {}) {
+    assertGM(); assertActor(actor, true);
+    super(actor, { ...options, id: `${ID}-assign-${actor.uuid.replace(/[^A-Za-z0-9_-]/g, "-")}` });
+    this.services = services; this.actor = actor;
   }
-  get title() { return t("ElementManager"); }
-  getData() { assertGM(); return { elements: this.services.registry.get() }; }
+  static get defaultOptions() {
+    return foundry.utils.mergeObject(super.defaultOptions, { classes: ["da-config"], title: "Dominion Aetherics", template: `${ROOT}/templates/element-manager.hbs`, width: 640, height: "auto", resizable: true, closeOnSubmit: true, submitOnChange: false, submitOnClose: false });
+  }
+  get title() { return `${t("ElementManager")} — ${this.actor.name}`; }
+  getData() {
+    assertGM(); assertActor(this.actor, true);
+    const assigned = new Set(this.services.assignments.getIds(this.actor));
+    return { actorName: this.actor.name, elements: this.services.registry.get().map(e => ({ ...e, icon: imagePath(e.icon), assigned: assigned.has(e.id) })) };
+  }
   activateListeners(html) {
     super.activateListeners(html);
-    html[0].querySelectorAll("[data-edit-element]").forEach(button => button.addEventListener("click", () => {
-      assertGM();
-      const element = this.services.registry.get().find(e => e.id === button.dataset.editElement);
-      new ElementEditorApp(this.services, element).render(true);
-    }));
-    html[0].querySelector("[data-create-element]").addEventListener("click", () => new ElementEditorApp(this.services).render(true));
-    html[0].querySelectorAll("[data-delete-element]").forEach(button => button.addEventListener("click", async () => {
-      try {
-        assertGM();
-        const confirmed = await foundry.applications.api.DialogV2.confirm({ window: { title: t("DeleteElement") }, content: `<p>${t("DeleteElementConfirm")}</p>`, rejectClose: false });
-        if (confirmed) await this.services.registry.remove(button.dataset.deleteElement);
-      } catch (error) { report(error); }
-    }));
+    bindImageFallbacks(html[0]);
+    html[0].querySelector("[data-open-library]").addEventListener("click", () => this.services.openLibrary(this.actor));
+  }
+  async _updateObject() {
+    try {
+      const ids = [...this.form.querySelectorAll("[data-assigned-id]:checked")].map(input => input.dataset.assignedId);
+      await this.services.assignments.set(this.actor, ids);
+      ui.notifications.info(t("AssignmentsSaved"));
+    } catch (error) { report(error); throw error; }
   }
 }
 
 export class ElementEditorApp extends foundry.appv1.api.FormApplication {
   constructor(services, element, options = {}) {
     super({}, options); this.services = services;
-    this.definition = clone(element ?? { id: foundry.utils.randomID(), name: "", icon: "icons/svg/atom.svg", symbol: "", description: "", order: services.registry.get().length, passives: [], effects: [] });
+    this.definition = clone(element ?? { id: foundry.utils.randomID(), name: "", icon: DEFAULT_ICON, symbol: "", description: "", order: services.registry.get().length, passives: [], effects: [] });
     this.sources = clone(this.definition.effects);
   }
   static get defaultOptions() {
