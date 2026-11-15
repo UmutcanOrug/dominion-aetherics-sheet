@@ -62,7 +62,7 @@
     "PowerLocked": "This power's elemental requirements are not satisfied.",
     "GMOnly": "Only a GM can configure world elements and Power requirements.",
     "NoPermission": "You do not have the required document ownership permission.",
-    "InvalidActor": "Select a SWADE character Actor.",
+    "InvalidActor": "Select a SWADE character or NPC Actor.",
     "InvalidPower": "Select a SWADE Power Item.",
     "WrongActor": "This Power does not belong to the selected Actor.",
     "InvalidElement": "Invalid element ID.",

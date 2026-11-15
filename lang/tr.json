@@ -62,7 +62,7 @@
     "PowerLocked": "Bu gücün element gereksinimleri sağlanmıyor.",
     "GMOnly": "Dünya elementlerini ve güç gereksinimlerini yalnızca GM yapılandırabilir.",
     "NoPermission": "Bu işlem için gerekli belge sahiplik izniniz yok.",
-    "InvalidActor": "Bir SWADE character Actor seçin.",
+    "InvalidActor": "Bir SWADE character veya NPC Actor seçin.",
     "InvalidPower": "Bir SWADE Power Item seçin.",
     "WrongActor": "Bu güç seçilen Actor'a ait değil.",
     "InvalidElement": "Element kimliği geçersiz.",

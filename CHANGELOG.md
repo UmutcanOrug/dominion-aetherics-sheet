@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.1 — 2026-11-15
+
+- Fix optional sheet registration for NPCs, including both NPC Extras and NPC Wild Cards.
+- Extend Actor validation and background passive reconciliation to NPCs and unlinked NPC tokens.
+- Keep the same official SWADE superclass, stable sheet ID, ownership checks and non-default registration.
+- Existing PC/NPC sheet choices, recipes, selections and system data are preserved; no migration.
+- 39 automated tests, including NPC rendering, permissions, passives, Tools dispatch and token/base isolation.
+
 ## 0.2.0 — 2026-11-15
 
 - Explicit AND/OR selection per element group with a live requirement preview.

@@ -1,13 +1,17 @@
 export const ID = "dominion-aetherics-sheet";
 export const SCHEMA = 1;
 export const ROOT = `modules/${ID}`;
+export const SUPPORTED_ACTOR_TYPES = Object.freeze(["character", "npc"]);
 export const t = (key, data) => data ? game.i18n.format(`DA.${key}`, data) : game.i18n.localize(`DA.${key}`);
 export const clone = value => structuredClone(value);
 export function assertGM() {
   if (!game.user?.isGM) throw new Error(t("GMOnly"));
 }
+export function isSupportedActor(actor) {
+  return actor?.documentName === "Actor" && SUPPORTED_ACTOR_TYPES.includes(actor.type);
+}
 export function assertActor(actor, write = false) {
-  if (actor?.documentName !== "Actor" || actor.type !== "character") throw new Error(t("InvalidActor"));
+  if (!isSupportedActor(actor)) throw new Error(t("InvalidActor"));
   if (!actor.testUserPermission(game.user, write ? "OWNER" : "OBSERVER")) throw new Error(t("NoPermission"));
 }
 export function assertPower(item) {

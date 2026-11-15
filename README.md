@@ -1,8 +1,8 @@
 # Dominion Aetherics Sheet
 
-Foundry VTT V13 / **SWADE tam olarak 5.1.0** için isteğe bağlı karakter kağıdı. Yalnızca Powers sekmesinin listesini element ve güç grafiğine dönüştürür. Resmi SWADE kağıdını kaldırmaz, varsayılan yapmaz ve sistem dosyalarını değiştirmez.
+Foundry VTT V13 / **SWADE tam olarak 5.1.0** için isteğe bağlı karakter ve NPC kağıdı. Normal NPC ve NPC Wild Card desteklenir. Yalnızca Powers sekmesinin listesini element ve güç grafiğine dönüştürür. Resmi SWADE kağıtlarını kaldırmaz, varsayılan yapmaz ve sistem dosyalarını değiştirmez.
 
-**v0.2.0 test sürümüdür.** Hedef Foundry V13 Build 351'dir. Kullanıcı, önceki sürümün canlı dünyasında ana hatlarıyla çalıştığını bildirdi; Foundry uyumluluk metadatası bu temel kullanım raporuyla `13.351` olarak güncellendi. Yeni SWADE Tools entegrasyonu otomatik testlerden geçmiştir; geliştirici tarafından canlı Foundry/Forge kabul testi yapılmamıştır. SWADE 5.2+ ve Foundry 14 desteklenmez.
+**v0.2.1 test sürümüdür.** Hedef Foundry V13 Build 351'dir. Kullanıcı, önceki sürümün oyuncu karakterlerinde çalıştığını bildirdi; Foundry uyumluluk metadatası bu temel kullanım raporuyla `13.351` olarak belirtilmiştir. NPC desteği ve SWADE Tools entegrasyonu otomatik testlerden geçmiştir; geliştirici tarafından canlı Foundry/Forge kabul testi yapılmamıştır. SWADE 5.2+ ve Foundry 14 desteklenmez.
 
 ## Kurulum ve yeni karakterde deneme
 
@@ -13,7 +13,7 @@ https://github.com/UmutcanOrug/dominion-aetherics-sheet/releases/latest/download
 ```
 
 1. SWADE 5.1.0 dünyanızda Manage Modules üzerinden **Dominion Aetherics Sheet** ve **SWADE Tools** modüllerini açın. Entegrasyon [swade-tools-fix 2.2.4](https://github.com/UmutcanOrug/swade-tools-fix/releases/tag/v2.2.4) API'sine göre hazırlanmıştır. Fork'un kurulum manifesti: `https://github.com/UmutcanOrug/swade-tools-fix/releases/latest/download/module.json`.
-2. Yeni bir **character** Actor oluşturun. NPC kağıtları bu modülün kapsamı dışındadır.
+2. Bir **character** veya **npc** Actor açın ya da oluşturun. NPC'nin Wild Card seçeneğinin açık veya kapalı olması desteği etkilemez.
 3. Karakterin başlığındaki **Sheet Configuration / Configure Sheet** menüsünü açın.
 4. Bu Actor için **Dominion Aetherics Sheet** seçin. Dünya genelinde **Make Default / Varsayılan yap** seçeneğini işaretlemeyin.
 5. Powers sekmesine geçin. Yeni, henüz Arcane Background'u olmayan karakterde de bu sekme açılır.
@@ -23,6 +23,8 @@ https://github.com/UmutcanOrug/dominion-aetherics-sheet/releases/latest/download
 9. Karakter sahibi oyuncu soldaki elementleri seçebilir. Açılan güç ikonuna tıklamak **SWADE Tools büyü kullanım penceresini** açar. Zar, PP maliyeti, modifier, AoE ve template işlemlerini SWADE Tools yönetir. Tools kapalı veya API hazır değilse açıklama gösterilir; sistem sohbet kartına geçilmez.
 
 Resmi kağıda geri dönmek için aynı Actor'ın Sheet Configuration menüsünden SWADE Official Sheet seçin. Güç Item'ları, PP değerleri ve Actor verileri dönüştürülmez. Diğer Actor'ların sheet seçimi ve aktif elementleri değişmez.
+
+NPC'ler için de Sheet Configuration menüsünden **Dominion Aetherics Sheet** seçin. Bu seçenek SWADE Official düzenini kullanır. Mevcut NPC/Community kağıtları kayıtlı kalır; güncelleme herhangi bir Actor'ın sheet'ini kendiliğinden değiştirmez. Önceki sürümde seçeneği göremediyseniz 0.2.1'e güncelleyip istemciyi yeniden yükleyin.
 
 Manuel kurulum: release'teki `module.zip` dosyasını `Data/modules/dominion-aetherics-sheet/` içine açın. `module.json` bu klasörün doğrudan altında olmalıdır. Forge'da manifest üzerinden kurulum için herkese açık GitHub varlıkları kullanılır; Forge'da canlı kurulum henüz doğrulanmamıştır.
 
@@ -92,12 +94,12 @@ Yeni sürüm için `package.json`, lockfile ve `module.json` sürümünü günce
 
 `/releases/latest/download/module.json` adresinin çalışması için test sürümleri GitHub'da normal latest release olarak listelenir. Başka Foundry/SWADE sürümleri için destek iddia edilmez.
 
-Kaynak incelemesi: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Test kapsamı ve A–J canlı kontrol listesi: [docs/TEST-REPORT.md](docs/TEST-REPORT.md).
+Kaynak incelemesi: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Test kapsamı ve canlı kontrol listesi: [docs/TEST-REPORT.md](docs/TEST-REPORT.md).
 
 ## English quick start
 
-Install with the manifest above, enable this module and **SWADE Tools** (the `swade-tools-fix` fork, 2.2.4), create a fresh **character** Actor, and select **Dominion Aetherics Sheet** for that Actor only. Leave **Make Default** unchecked. Each Power group has an explicit **AND** (all elements) / **OR** (any one) selector and live preview. Unlocked icons open the existing SWADE Tools casting dialog through `game.swadetools.item`; there is no native chat-card fallback. Switching sheets preserves Items, resources and selections. Clear selections before disabling the module to remove managed passives.
+Install with the manifest above, enable this module and **SWADE Tools** (the `swade-tools-fix` fork, 2.2.4), open a **character** or **npc** Actor, and select **Dominion Aetherics Sheet** for that Actor only. Both NPC Extras and NPC Wild Cards are supported, using the system's Official layout. Leave **Make Default** unchecked. Each Power group has an explicit **AND/OR** selector and preview. Unlocked icons open SWADE Tools through `game.swadetools.item`; there is no native chat-card fallback. Existing NPC/Community sheets stay registered. Switching sheets preserves Items, resources and selections. Clear selections before disabling Dominion to remove managed passives.
 
-This testing update targets Foundry V13 Build 351 and exactly SWADE 5.1.0. The user reported successful basic live use of 0.1.0; compatibility metadata reflects that baseline report. 31 automated tests cover services, actual 5.1.0 Powers DOM and the pinned Tools API wrapper with mocked dialog boundaries. The new Tools casting workflow still requires live acceptance; no live server was accessed by the developer.
+This testing update targets Foundry V13 Build 351 and exactly SWADE 5.1.0. Compatibility metadata reflects the user's successful character-sheet baseline report. 39 automated tests cover characters, NPC Extras/Wild Cards, services, actual 5.1.0 Powers DOM and the pinned Tools API wrapper with mocked dialog boundaries. NPC and Tools workflows still require live acceptance; no live server was accessed by the developer.
 
 Original module code is MIT licensed. Foundry and SWADE are separately licensed. Their source/templates/assets are reused from the installed system and are not redistributed.

@@ -90,6 +90,29 @@ test("available node opens SWADE Tools once without a system card; stale locked 
   await services.selections.set(actor,[]); use.click(); await new Promise(resolve => setTimeout(resolve,5)); assert.equal(dialogs,1); assert.equal(shows,0);
   await sheet.close();
 });
+for (const wildcard of [false, true]) {
+  test(`NPC ${wildcard ? "Wild Card" : "Extra"} renders the graph and retains official controls`, async () => {
+    const { services, actor } = setupDOM(); actor.type = "npc"; actor.system.wildcard = wildcard;
+    const systemBefore = structuredClone(actor.system), item = new Power(actor);
+    await configure(item, [["H"]]); await services.selections.set(actor, ["H"]);
+    const data = dataFor(actor), before = await original(data);
+    const Sheet = createDominionSheet(OfficialSheet, services), sheet = new Sheet(actor);
+    const root = (await sheet._renderInner(data))[0];
+    assert.ok(root.querySelector(".da-graph"));
+    assert.equal(root.querySelectorAll(".da-power").length, 1);
+    for (const selector of ['.item-create[data-type="power"]', '[name="system.powerPoints.general.value"]', '[name="system.powerPoints.general.max"]', 'section[data-tab="effects"]', '[data-header-control]']) {
+      assert.equal(root.querySelector(selector).outerHTML, before.querySelector(selector).outerHTML);
+    }
+    let dialogs = 0;
+    game.modules.set("swade-tools", { active: true });
+    game.swadetools = { item: (sourceActor, id) => { assert.equal(sourceActor, actor); assert.equal(id, item.id); dialogs++; } };
+    item.show = () => { throw new Error("System card must not open"); };
+    sheet.activateListeners([root]); root.querySelector('[data-da-action="use"]').click();
+    await new Promise(resolve => setTimeout(resolve, 5));
+    assert.equal(dialogs, 1); assert.equal(actor.type, "npc"); assert.deepEqual(actor.system, systemBefore);
+    await sheet.close();
+  });
+}
 test("owners can select elements, read-only viewers cannot and no new Actor form fields are introduced", async () => {
   const { services, actor } = setupDOM(); const root = await original(dataFor(actor)); const graph = new PowerGraphRenderer({ actor,isEditable:false },services); await graph.prepare(root,dataFor(actor)); graph.bind();
   assert.ok([...root.querySelectorAll('.da-element')].every(button => button.disabled));

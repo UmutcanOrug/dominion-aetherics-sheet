@@ -1,24 +1,70 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { setup, Actor } from "./helpers.mjs";
+import { setup, Actor, Effect, element, source } from "./helpers.mjs";
+import { ID } from "../scripts/constants.js";
 
-test("registration is opt-in, character-only and does not touch system defaults or unregister sheets", async () => {
-  const { values }=setup(); const callbacks=new Map(), registrations=[];
-  globalThis.Hooks={ once:(name,fn)=>callbacks.set(name,fn), on:()=>{} };
+async function boot(tag, definitions) {
+  const { values }=setup(definitions); const callbacks=new Map(), registrations=[], settings=new Map(), events=new Map();
+  globalThis.Hooks={ once:(name,fn)=>callbacks.set(name,fn), on:(name,fn)=>events.set(name,fn) };
   class ActorSheet {};
   class CharacterSheet extends ActorSheet {};
   class App {};
   globalThis.foundry={appv1:{api:{Application:App,FormApplication:App},sheets:{ActorSheet}},applications:{apps:{DocumentSheetConfig:{registerSheet:(...args)=>registrations.push(args)}}}};
-  globalThis.CONFIG={Actor:{documentClass:Actor}};
+  const officialDefaults={character:"swade.CharacterSheet",npc:"swade.SwadeNPCSheet"};
+  globalThis.CONFIG={Actor:{documentClass:Actor,sheetClasses:officialDefaults}};
   globalThis.ui={notifications:{error:()=>{}},windows:{}};
   const module={}; game.modules=new Map([["dominion-aetherics-sheet",module]]); game.swade={sheets:{CharacterSheet}}; game.system={id:"swade",version:"5.1.0"}; game.release={generation:13};
-  game.settings.register=(_id,key,options)=>{ if(!values.has(key)) values.set(key,options.default); };
-  await import("../scripts/main.js");
+  game.actors=[]; game.scenes=[];
+  game.settings.register=(_id,key,options)=>{ settings.set(key,options); if(!values.has(key)) values.set(key,options.default); };
+  await import(`../scripts/main.js?test=${tag}`);
   callbacks.get("init")();
+  return {values,callbacks,registrations,settings,events,module,CharacterSheet,officialDefaults};
+}
+
+async function until(predicate) {
+  for(let i=0;i<100;i++) {
+    if(predicate())return;
+    await new Promise(resolve=>setTimeout(resolve,5));
+  }
+  assert.ok(predicate(),"Background NPC reconciliation did not finish");
+}
+
+test("registration is opt-in for characters and NPCs and preserves all official defaults", async () => {
+  const {registrations,callbacks,module,CharacterSheet,officialDefaults}=await boot("registration");
   assert.equal(registrations.length,1);
   const [document,scope,Sheet,options]=registrations[0];
   assert.equal(document,Actor); assert.equal(scope,"dominion-aetherics-sheet"); assert.ok(Sheet.prototype instanceof CharacterSheet);
-  assert.deepEqual(options.types,["character"]); assert.equal(options.makeDefault,false);
+  assert.deepEqual(options.types,["character","npc"]); assert.equal(options.makeDefault,false);
+  assert.deepEqual(CONFIG.Actor.sheetClasses,{character:"swade.CharacterSheet",npc:"swade.SwadeNPCSheet"});
+  assert.equal(CONFIG.Actor.sheetClasses,officialDefaults);
   assert.ok(Object.isFrozen(module.api)); assert.equal(typeof module.api.setActiveElements,"function");
   game.system.version="5.2.0"; callbacks.get("init")(); assert.equal(registrations.length,1);
+});
+
+test("ready and registry changes reconcile NPC Extras and unlinked NPC Wild Cards independently",async()=>{
+  const {values,callbacks,settings,events}=await boot("npc-reconciliation",[element("H",[source()]),element("O")]);
+  const npc=new Actor("Actor.NPC");npc.type="npc";npc.system.wildcard=false;
+  const base=new Actor("Actor.BaseNPC");base.type="npc";base.system.wildcard=true;
+  const synthetic=new Actor("Scene.S.Token.T.Actor.BaseNPC");synthetic.type="npc";synthetic.system.wildcard=true;synthetic.isToken=true;
+  const untouched=new Actor("Actor.UntouchedNPC");untouched.type="npc";
+  const vehicle=new Actor("Actor.Vehicle");vehicle.type="vehicle";
+  const unrelated=new Effect({id:"unrelated",name:"Unrelated"});npc.effects.push(unrelated);
+  for(const actor of [npc,synthetic,vehicle])actor.flags[ID]={schemaVersion:1,activeElements:["H","deleted"]};
+  base.flags[ID]={schemaVersion:1,activeElements:["O"]};
+  const token={actorLink:false,actor:synthetic};
+  game.actors=[npc,base,untouched,vehicle];game.scenes=[{tokens:[token]}];
+  callbacks.get("ready")();
+  await until(()=>npc.effects.length===2&&synthetic.effects.length===1);
+  assert.deepEqual(npc.flags[ID].activeElements,["H"]);assert.deepEqual(synthetic.flags[ID].activeElements,["H"]);
+  assert.deepEqual(base.flags[ID].activeElements,["O"]);assert.equal(base.updates.length,0);assert.equal(base.effects.length,0);
+  assert.equal(untouched.updates.length,0);assert.equal(untouched.getFlag(ID,"activeElements"),undefined);
+  assert.equal(vehicle.updates.length,0);assert.deepEqual(vehicle.flags[ID].activeElements,["H","deleted"]);
+  values.set("elements",{schemaVersion:1,elements:[element("O")]});settings.get("elements").onChange();
+  await until(()=>npc.effects.length===1&&synthetic.effects.length===0);
+  assert.equal(npc.effects[0],unrelated);assert.deepEqual(npc.flags[ID].activeElements,[]);assert.deepEqual(synthetic.flags[ID].activeElements,[]);
+  values.set("elements",{schemaVersion:1,elements:[element("H",[source()]),element("O")]});
+  npc.flags[ID].activeElements=["H"];events.get("updateActor")(npc,{flags:{[ID]:{activeElements:["H"]}}});
+  synthetic.flags[ID].activeElements=["H"];events.get("updateToken")(token);
+  await until(()=>npc.effects.length===2&&synthetic.effects.length===1);
+  assert.equal(base.effects.length,0);assert.equal(base.updates.length,0);
 });

@@ -33,7 +33,9 @@ These are source observations, not a claim that Foundry runtime tests passed.
 
 ## Replacement boundary
 
-`createDominionSheet` constructs a subclass with the stable class name `DominionActorSheet`. It inherits the official template getter, form submission, header controls, item drops, all non-Powers listeners, all Actor preparation and normal system behavior. Registration happens at `init` after the system init listener, with `makeDefault: false` and `types: ["character"]`. It never unregisters a class or changes world sheet defaults.
+`createDominionSheet` constructs a subclass with the stable class name `DominionActorSheet`. It inherits the official template getter, form submission, header controls, item drops, all non-Powers listeners, all Actor preparation and normal system behavior. Registration happens at `init` after the system init listener, with `makeDefault: false` and `types: ["character", "npc"]`. It never unregisters a class or changes world sheet defaults.
+
+SWADE 5.1.0 already registers this same official `CharacterSheet` class for both character and NPC Actors. Dominion uses that supported layout for both; it does not patch the separate Community NPC sheet. An NPC Wild Card is still an `npc` Actor with its Wild Card setting enabled, not a different Actor type. A shared `isSupportedActor` predicate is used by validation, background reconciliation and sheet registration. Wild Card status is not used as an eligibility check. World NPCs and unlinked synthetic NPCs are included in ready/registry-change reconciliation; untouched official-sheet Actors receive no writes.
 
 The only template-related override is ApplicationV1's `_renderInner`. It first obtains the complete rendered system form from `super`, then replaces the contents of `span.powers` on that instance. Existing section-header nodes (Add Power and all PP pools) are moved intact into the new section. `super.activateListeners` runs afterwards, so SWADE binds its real handlers to these retained controls. Other modules' render hooks see the resulting sheet as usual.
 

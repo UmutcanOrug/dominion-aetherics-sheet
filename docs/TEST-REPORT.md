@@ -1,10 +1,10 @@
-# v0.2.0 validation report
+# v0.2.1 validation report
 
 Date: 2026-11-15. Target: Foundry V13 Build 351, SWADE 5.1.0, swade-tools-fix 2.2.4, Forge hosting.
 
 ## Executed
 
-Node 24.22.1 automated tests: **31 passed, 0 failed**. Service tests use mocked Foundry documents/permissions. DOM tests render the actual distributed SWADE 5.1.0 Powers partial with Handlebars/jsdom, a mocked superclass and documents. The Tools contract test executes the real pinned `scripts/st.js` wrapper, mocking only imported dialog/roll boundaries. These tests do not execute a licensed Foundry server or all of SWADE Tools' runtime code.
+Node 24.22.1 automated tests: **39 passed, 0 failed**. Service tests use mocked Foundry documents/permissions. DOM tests render the actual distributed SWADE 5.1.0 Powers partial with Handlebars/jsdom, a mocked superclass and documents. The Tools contract test executes the real pinned `scripts/st.js` wrapper, mocking only imported dialog/roll boundaries. These tests do not execute a licensed Foundry server or all of SWADE Tools' runtime code.
 
 - Inclusive AND combinations, OR recipes, forbidden elements, exact matching.
 - Explicit AND/OR editor selectors, live preview, add/remove groups and OR persistence. Old mixed recipes retain their availability semantics on editor round-trip; no migration.
@@ -17,7 +17,9 @@ Node 24.22.1 automated tests: **31 passed, 0 failed**. Service tests use mocked 
 - One-client authority and owner fallback when no GM is active.
 - GM source snapshots retain changes/other-module flags and strip identity/duration/transfer state.
 - Registry read cloning, serialized local saves and validation.
-- Separate non-default character-only sheet registration; later SWADE versions refused.
+- Separate non-default character/NPC sheet registration; official PC and Community NPC defaults stay unchanged. Later SWADE versions refused.
+- NPC Extras and NPC Wild Cards: selections, requirements, shared-source passives, permissions, Tools dispatch, graph rendering and original controls.
+- NPC ready/registry-change/update hooks prune removed IDs and reconcile managed effects; independent token Actors do not write to their base NPC. Untouched NPCs and unsupported vehicle/group Actors remain unchanged.
 - Original PP pools, PP refresh, Add Power, other tab DOM and inherited header/template retention.
 - Powers tab insertion on a fresh character with no powers.
 - Available node invokes `game.swadetools.item` once without calling `item.show()`; a stale now-locked node is blocked.
@@ -31,11 +33,11 @@ Node 24.22.1 automated tests: **31 passed, 0 failed**. Service tests use mocked 
 
 ## Not executed in a live world
 
-The user supplied live screenshots and reported that 0.1.0 works in their world at a basic level. This is a **user-reported baseline smoke test**, not a full acceptance run. The manifest now records `verified: 13.351` based on that report. The developer did not access a live server. The new Tools casting workflow, PP spending, templates, multiplayer, Forge access and detailed integration remain **unverified in live runtime**.
+The user reported working player-character sheets and missing NPC/NPC Wild Card support in the previous version. The former is a **user-reported baseline smoke test**, not a full acceptance run. The manifest records `verified: 13.351` based on that baseline. The developer did not access a live server. The 0.2.1 NPC fix and Tools casting/PP/templates, multiplayer and Forge integration remain **unverified in live runtime**.
 
 References are pinned by `tools/fetch-reference.mjs`: official SWADE 5.1.0 ZIP SHA256 `df631eab4e09d6309d8ffe7a9966407c00ecd1b6c0a6987beab4e6bc51d157b3`; Tools Fix commit `24de3c15f7b9de79c0114862bd519706b58f7197`, normalized API-source SHA256 `240041f8effbfb94b793380005372e47356539a41d77b3c78a10738bf74f58b3`.
 
-## A–J acceptance run on fresh test Actors
+## Acceptance run on fresh test Actors
 
 Keep a reference character on the official sheet. Make a second new character and assign only that Actor to Dominion Aetherics Sheet; leave Make Default unchecked. Record Item count, PP and existing effects before testing.
 
@@ -51,6 +53,7 @@ Keep a reference character on the official sheet. Make a second new character an
 | H: Tools workflow | Use an unlocked power: the private SWADE Tools casting dialog opens without an initial system item card. Test activation, cancel, modifiers, PP spending, AoE/templates and Tools result cards. Locked nodes stay blocked. Repeat with an unlinked token and confirm correct origin. | Pending |
 | I: sheet switching | Switch the test Actor back to the official sheet. Same Items, PP and effects remain. Switch again; selections persist. Clear elements to remove managed passives. | Pending |
 | J: integration | Check usual modules, header buttons, drops, other tabs and Forge. Disable Tools: graph explains the missing dependency and never opens the system card. Check the compatibility badge after updating. | Pending |
+| K: NPCs | On an NPC Extra and an NPC Wild Card, select Dominion in Sheet Configuration with Make Default off. Test the graph, AND/OR, shared passives, Tools casting and sheet switching. Repeat with an unlinked NPC token; base Actor data must stay unchanged. Existing official and Community NPC sheets must remain selectable. | Pending |
 
 Also test a removed element, an unconfigured power, an explicit always-available power, GM-only configuration, an owner player, an observer, and disconnection of the current effect authority. If another module rewrites power rows, inspect its integration separately. Clear selected elements before disabling this module if you want its passive copies removed.
 

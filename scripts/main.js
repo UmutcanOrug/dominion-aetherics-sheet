@@ -1,4 +1,4 @@
-import { ID, SCHEMA, assertGM, report, t } from "./constants.js";
+import { ID, SCHEMA, SUPPORTED_ACTOR_TYPES, isSupportedActor, assertGM, report, t } from "./constants.js";
 import { ElementRegistry } from "./services/registry.js";
 import { ElementSelectionService } from "./services/selections.js";
 import { PowerRequirementService } from "./services/requirements.js";
@@ -14,14 +14,14 @@ function refresh() {
 }
 function relevantActors() {
   const actors = new Map();
-  for (const actor of game.actors) if (actor.type === "character") actors.set(actor.uuid, actor);
+  for (const actor of game.actors) if (isSupportedActor(actor)) actors.set(actor.uuid, actor);
   for (const scene of game.scenes) for (const token of scene.tokens) {
-    if (!token.actorLink && token.actor?.type === "character") actors.set(token.actor.uuid, token.actor);
+    if (!token.actorLink && isSupportedActor(token.actor)) actors.set(token.actor.uuid, token.actor);
   }
   return [...actors.values()];
 }
 async function reconcile(actor) {
-  if (!services || actor.type !== "character" || !services.passives.isAuthority(actor)) return;
+  if (!services || !isSupportedActor(actor) || !services.passives.isAuthority(actor)) return;
   const raw = actor.getFlag(ID, "activeElements");
   const hasManaged = actor.effects.some(e => e.getFlag(ID, "managed"));
   if (raw === undefined && !hasManaged) return;
@@ -61,7 +61,7 @@ function registerSheet() {
     assertGM(); manager ??= new ElementManagerApp(services); return manager.render(true);
   } };
   SheetClass = createDominionSheet(Base, services);
-  foundry.applications.apps.DocumentSheetConfig.registerSheet(CONFIG.Actor.documentClass, ID, SheetClass, { types: ["character"], makeDefault: false, label: "DA.Title" });
+  foundry.applications.apps.DocumentSheetConfig.registerSheet(CONFIG.Actor.documentClass, ID, SheetClass, { types: [...SUPPORTED_ACTOR_TYPES], makeDefault: false, label: "DA.Title" });
   game.modules.get(ID).api = Object.freeze({
     openElementManager: services.openManager,
     getElements: () => registry.get().map(e => {
