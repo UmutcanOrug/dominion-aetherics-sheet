@@ -67,7 +67,15 @@ The editor supports an optional prerequisite switch, AND/OR and a dynamically fi
 
 The graph renders four fixed tier columns (orange, navy, purple, cyan), compact Aether buttons and a separate green Power area on the right. Narrow sheets scroll horizontally while preserving tier order. Tooltips include full names and prerequisite descriptions. Hover/focus connections include prerequisite links. The original PP/Add Power controls, SWADE Tools adapter, optional character/NPC registration and other sheet tabs keep their previous boundaries. No system-document conversion or schema reset is required.
 
-## State storage
+## Visual global library and Settings entry (0.5.0)
+
+The global catalog now shares the character graph's scoped layout/CSS: four compact Aether columns and a right-hand Power grid. `buildLibraryGraph` derives the full catalog from the registry and native world Power templates, independently of Actor assignments or active selections. Required Aether-to-Aether, Aether-to-Power and forbidden Aether-to-Power edges have distinct kinds. Namespaced node keys prevent an Aether and Power with the same document ID from colliding. AND/OR, forbidden and exact semantics remain in the existing rule descriptions; a drawn edge does not assert sufficient availability on its own.
+
+`LibraryGraphController` handles hover/focus links, pinned inspection, clickable incoming/outgoing entries and an optional all-links view. It never calls selection/passive/casting services. New catalog renders preserve the pinned ID and all-links preference, discard deleted selections, abort old DOM listeners and disconnect the ResizeObserver. SVG marker IDs include the library's world/Actor context to avoid cross-window conflicts. Rendering/editing the catalog does not create a synthetic preview Actor or modify real Actors.
+
+The restricted `globalLibrary` submenu uses [Foundry V13 `ClientSettings.registerMenu`](https://foundryvtt.com/api/v13/classes/foundry.helpers.ClientSettings.html#registerMenu). Its FormApplication adapter opens the same cached `services.openLibrary()` world instance used by the public API, with GM authorization checked again. It has no Actor context and therefore no copy-to-Actor buttons. Actor-sheet entry points retain their exact contextual Actor, including unlinked tokens. Registration is still limited to the supported Foundry/SWADE versions.
+
+## Stored data
 
 - Registry: world setting `dominion-aetherics-sheet.elements`, `{ schemaVersion: 1, elements: [...] }`.
 - Selection: Actor flags `activeElements` and `schemaVersion` in the module namespace; stable IDs only.

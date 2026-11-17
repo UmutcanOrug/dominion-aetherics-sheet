@@ -1,10 +1,16 @@
-# v0.4.0 validation report
+# v0.5.0 validation report
 
 Date: 2026-11-17. Target: Foundry V13 Build 351, SWADE 5.1.0, swade-tools-fix 2.2.4, Forge hosting.
 
 ## Executed
 
-Node 24.22.1 automated tests: **69 passed, 0 failed**. Service tests use mocked Foundry documents/permissions. DOM tests render the actual distributed SWADE 5.1.0 Powers partial with Handlebars/jsdom, a mocked superclass and documents. The Tools contract test executes the real pinned `scripts/st.js` wrapper, mocking only imported dialog/roll boundaries. These tests do not execute a licensed Foundry server or all of SWADE Tools' runtime code.
+Node 24.22.1 automated tests: **73 passed, 0 failed**. Service tests use mocked Foundry documents/permissions. DOM tests render the actual distributed SWADE 5.1.0 Powers partial with Handlebars/jsdom, a mocked superclass and documents. The Tools contract test executes the real pinned `scripts/st.js` wrapper, mocking only imported dialog/roll boundaries. These tests do not execute a licensed Foundry server or all of SWADE Tools' runtime code.
+
+- Settings submenu registration, restricted GM access, shared world-library instance and absence of Actor context.
+- Full catalog regardless of assignments; native world Powers retain the separate right-hand area, with namespaced node keys for colliding IDs.
+- Required/forbidden Aether-to-Power edges, AND/OR Aether dependencies, pinned incoming/outgoing inspection and inactive source links.
+- Graph inspection makes no Actor, PP, passive or Item-flag changes. Contextual grants remain explicit; Settings/world mode omits copy-to-Actor controls.
+- All-links view persists across catalog data preparation; disposed DOM listeners no longer change selection.
 
 - Legacy definitions default to level 1 with no prerequisites; IDs, assignments, selections, recipes and system data remain intact.
 - Four levels, strictly lower references, optional no-prerequisite higher levels, AND/OR prerequisites and level 3/4 chains.
@@ -46,7 +52,7 @@ Node 24.22.1 automated tests: **69 passed, 0 failed**. Service tests use mocked 
 
 `node tools/check.mjs` validates manifest URLs/version, required files, JavaScript syntax, template compilation and both language key sets. The build validates the ZIP root manifest and excludes references, dependencies, tests and local publishing helpers. Public release assets are verified separately after publishing.
 
-The actual module graph/editor templates and CSS were visually inspected in an isolated local browser fixture at wide and compact sheet widths. All four colored columns stay ordered, Powers remain to the right, compact mode scrolls horizontally, and the level 3 prerequisite editor shows only levels 1/2. The fixture uses a small host-style shim rather than the complete Foundry/SWADE runtime stylesheet, so this is layout evidence only. No live world was changed.
+The actual module graph/editor templates and CSS were visually inspected in an isolated local browser fixture at wide and compact sheet widths for 0.4.0. For 0.5.0, the actual library template, shared CSS and `LibraryGraphController` were run in a Turkish local browser fixture at wide/compact widths: four ordered tiers, right-hand Powers, pinned inspection, required/forbidden arrows and all-links mode were checked. Narrow windows preserve horizontal scrolling. A small host-style shim replaces the complete Foundry/SWADE runtime stylesheet, so this is layout/controller evidence only. No live world was changed.
 
 ## Not executed in a live world
 
@@ -76,6 +82,8 @@ Keep a reference character on the official sheet. Make a second new character an
 | N: library Powers and images | Create/import a Power, add only to A twice (one copy), then edit/delete its global template; A's existing copy stays unchanged. Check the bundled icon and missing-asset fallback. Repair a Forge path and reload to retry. | Pending |
 | O: tiers and rules | Place definitions in levels 1–4; confirm four compact columns left to right and Powers on the right at wide/narrow sheet widths. Level 2 requires Earth(1); level 3 requires Basic(1) AND Clay(2); level 4 requires level 3. Activate in order, then turn off Earth: dependents and their passives close, relevant Powers lock. Test OR with one alternative remaining and a level 4 with no prerequisite. | Pending |
 | P: tier configuration and isolation | Edit levels/rules in Global Library; verify lower-only choices, persistence after reload and legacy level-1 defaults. Revoking a required grant or deleting a required definition affects only dependent selections. Another Actor keeps independent state. Existing Items, recipes, sheet choice and PP stay intact. | Pending |
+| Q: visual library | Open the library with no active Aethers. Inspect level dependencies and a Power's AND/OR, forbidden and exact rules; pin a node, follow related names, then show all connections. Check wide/narrow resize, edits, deletion and reopening. Catalog inspection must not select Aethers, create effects, spend PP or cast. | Pending |
+| R: Configure Settings | As GM, open Configure Settings → Dominion Aetherics Sheet → Open Global Library. The world catalog opens without an Actor or grant buttons. The Actor-sheet entry still offers copying only to that Actor. Players cannot access either library entry. | Pending |
 
 Also test a removed element, an unconfigured power, an explicit always-available power, GM-only configuration, an owner player, an observer, and disconnection of the current effect authority. If another module rewrites power rows, inspect its integration separately. Clear selected elements before disabling this module if you want its passive copies removed.
 

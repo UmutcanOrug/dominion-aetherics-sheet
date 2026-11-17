@@ -1,60 +1,57 @@
 /* All selectors belong to the optional sheet or its own configuration windows. */
-.dominion-aetherics-sheet .da-graph { --da-accent: #227b86; --da-soft: #e0f0f0; --da-line: #808a8a; padding: 10px 4px; color: inherit; }
-.dominion-aetherics-sheet .da-toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
-.dominion-aetherics-sheet .da-toolbar button { width: auto; padding: 2px 10px; }
-.dominion-aetherics-sheet .da-toolbar-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
-.da-config .da-library-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
-.da-config .da-library-tabs [aria-pressed="true"] { border-color: #227b86; background: #227b8625; font-weight: bold; }
-.da-config .da-library-pane[hidden] { display: none; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-graph { --da-accent: #227b86; --da-soft: #e0f0f0; --da-line: #808a8a; padding: 10px 4px; color: inherit; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-toolbar button { width: auto; padding: 2px 10px; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-toolbar-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
 .da-config .da-library-import { margin: 12px 0; border: 1px solid #80808066; padding: 8px; }
 .da-config .da-library-import label { display: flex; flex-direction: column; gap: 4px; margin: 8px 0; }
 .da-config .da-manager [data-assigned-id] { flex: 0 0 20px; }
-.dominion-aetherics-sheet .da-help, .da-config .da-help { opacity: .8; font-size: 12px; line-height: 1.5; }
-.dominion-aetherics-sheet .da-legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 11px; padding: 5px 0 12px; }
-.dominion-aetherics-sheet .da-network-scroll { overflow-x: auto; padding-bottom: 6px; }
-.dominion-aetherics-sheet .da-network { position: relative; display: grid; grid-template-columns: repeat(4,minmax(116px,1fr)) minmax(240px,4fr); gap: 10px; min-width: 744px; min-height: 300px; align-items: stretch; }
-.dominion-aetherics-sheet .da-tier { min-width: 0; position: relative; z-index: 1; padding: 8px 6px; border: 1px solid var(--da-tier-color); border-top-width: 3px; border-radius: 5px; }
-.dominion-aetherics-sheet .da-tier-title { font-size: 11px; font-weight: bold; text-align: center; border-bottom: 1px solid #80808040; margin: 0 0 10px; padding-bottom: 7px; }
-.dominion-aetherics-sheet .da-level-1, .da-config .da-level-1 { --da-tier-color: #d27a2c; }
-.dominion-aetherics-sheet .da-level-2, .da-config .da-level-2 { --da-tier-color: #2853a0; }
-.dominion-aetherics-sheet .da-level-3, .da-config .da-level-3 { --da-tier-color: #a64b94; }
-.dominion-aetherics-sheet .da-level-4, .da-config .da-level-4 { --da-tier-color: #129eb0; }
-.dominion-aetherics-sheet .da-tier-empty { text-align: center; opacity: .4; margin-top: 18px; }
-.dominion-aetherics-sheet .da-connections { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: hidden; }
-.dominion-aetherics-sheet .da-connections path { stroke: var(--da-line); stroke-width: 1; fill: none; opacity: .4; }
-.dominion-aetherics-sheet .da-connections path.da-path-available { stroke: var(--da-accent); stroke-width: 1.5; opacity: .65; }
-.dominion-aetherics-sheet .da-elements, .dominion-aetherics-sheet .da-power-groups { position: relative; z-index: 1; min-width: 0; }
-.dominion-aetherics-sheet .da-elements { display: flex; flex-direction: column; gap: 7px; }
-.dominion-aetherics-sheet .da-element { display: flex; align-items: center; gap: 5px; min-height: 42px; height: auto; width: 100%; padding: 5px; margin: 0; border: 1px solid #8b8d88; border-radius: 5px; text-align: left; font-size: 11px; line-height: 1.2; background: #e7e5de; color: #353c3e; }
-.dominion-aetherics-sheet .da-element img { width: 28px; height: 28px; flex: 0 0 28px; object-fit: cover; filter: grayscale(.8); border: 0; border-radius: 4px; }
-.dominion-aetherics-sheet .da-aether-name { min-width: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.dominion-aetherics-sheet .da-aether-locked, .dominion-aetherics-sheet .da-aether-invalid { opacity: .55; }
-.dominion-aetherics-sheet .da-element strong { overflow-wrap: anywhere; }
-.dominion-aetherics-sheet .da-element.da-active { border: 2px solid var(--da-accent); background: var(--da-soft); box-shadow: 0 0 6px #227b8630; }
-.dominion-aetherics-sheet .da-element.da-active img { filter: none; }
-.dominion-aetherics-sheet .da-selection-mark { margin-left: auto; font-weight: bold; flex: 0 0 10px; font-size: 10px; }
-.dominion-aetherics-sheet .da-power-groups { border: 1px solid #7a9c45; border-top-width: 3px; border-radius: 5px; padding: 8px 10px; }
-.dominion-aetherics-sheet .da-power-group h3, .dominion-aetherics-sheet .da-passives h3 { font-size: 13px; font-weight: bold; margin: 0 0 10px; padding-bottom: 5px; border-bottom: 1px solid #80808055; }
-.dominion-aetherics-sheet .da-power-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 10px 8px; margin-bottom: 18px; }
-.dominion-aetherics-sheet .da-power { width: 100%; min-width: 0; text-align: center; position: relative; }
-.dominion-aetherics-sheet .da-power-icon { display: block; position: relative; width: 60px; height: 60px; padding: 0; margin: 0 auto; border: 2px solid #6d7b7d; border-radius: 5px; overflow: hidden; line-height: 1; background: #1d222b; }
-.dominion-aetherics-sheet .da-power-icon img { width: 56px; height: 56px; object-fit: cover; border: 0; border-radius: 0; }
-.dominion-aetherics-sheet .da-power-icon:disabled { opacity: 1; cursor: default; }
-.dominion-aetherics-sheet .da-locked .da-power-icon img, .dominion-aetherics-sheet .da-invalid .da-power-icon img { filter: grayscale(1) brightness(.38); }
-.dominion-aetherics-sheet .da-unconfigured .da-power-icon { border-style: dashed; border-color: #b48c41; }
-.dominion-aetherics-sheet .da-unconfigured .da-power-icon img { filter: grayscale(.8) brightness(.65); }
-.dominion-aetherics-sheet .da-available .da-power-icon { border-color: var(--da-accent); box-shadow: 0 0 7px #227b8655; }
-.dominion-aetherics-sheet .da-state-mark { position: absolute; right: 0; bottom: 0; color: white; background: #13272cce; padding: 2px 3px; font-size: 11px; }
-.dominion-aetherics-sheet .da-power-name { display: block; font-size: 10px; line-height: 1.25; margin-top: 4px; overflow-wrap: anywhere; }
-.dominion-aetherics-sheet .da-power-tools { display: flex; justify-content: center; gap: 3px; margin-top: 4px; }
-.dominion-aetherics-sheet .da-power-tools button { width: 24px; height: 20px; padding: 0; line-height: 18px; font-size: 10px; }
-.dominion-aetherics-sheet .da-graph button:focus-visible { outline: 2px solid var(--da-accent); outline-offset: 3px; }
-.dominion-aetherics-sheet .da-passives { margin-top: 14px; padding-top: 8px; }
-.dominion-aetherics-sheet .da-passives article { padding: 8px; margin-bottom: 6px; border-left: 3px solid var(--da-accent); background: #80808015; }
-.dominion-aetherics-sheet .da-passives small { display: block; opacity: .7; }
-.dominion-aetherics-sheet .da-passives p { white-space: pre-wrap; font-size: 12px; margin-bottom: 0; }
-.dominion-aetherics-sheet .da-empty { font-size: 12px; opacity: .7; grid-column: 1 / -1; }
-.dominion-aetherics-sheet .da-system-controls { display: block; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-help, .da-config .da-help { opacity: .8; font-size: 12px; line-height: 1.5; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 11px; padding: 5px 0 12px; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-network-scroll { overflow-x: auto; padding-bottom: 6px; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-network { position: relative; display: grid; grid-template-columns: repeat(4,minmax(116px,1fr)) minmax(240px,4fr); gap: 10px; min-width: 744px; min-height: 300px; align-items: stretch; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-tier { min-width: 0; position: relative; z-index: 1; padding: 8px 6px; border: 1px solid var(--da-tier-color); border-top-width: 3px; border-radius: 5px; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-tier-title { font-size: 11px; font-weight: bold; text-align: center; border-bottom: 1px solid #80808040; margin: 0 0 10px; padding-bottom: 7px; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-level-1, .da-config .da-level-1 { --da-tier-color: #d27a2c; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-level-2, .da-config .da-level-2 { --da-tier-color: #2853a0; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-level-3, .da-config .da-level-3 { --da-tier-color: #a64b94; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-level-4, .da-config .da-level-4 { --da-tier-color: #129eb0; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-tier-empty { text-align: center; opacity: .4; margin-top: 18px; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-connections { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: hidden; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-connections path { stroke: var(--da-line); stroke-width: 1; fill: none; opacity: .4; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-connections path.da-path-available { stroke: var(--da-accent); stroke-width: 1.5; opacity: .65; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-elements, :is(.dominion-aetherics-sheet, .da-library-window) .da-power-groups { position: relative; z-index: 1; min-width: 0; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-elements { display: flex; flex-direction: column; gap: 7px; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-element { display: flex; align-items: center; gap: 5px; min-height: 42px; height: auto; width: 100%; padding: 5px; margin: 0; border: 1px solid #8b8d88; border-radius: 5px; text-align: left; font-size: 11px; line-height: 1.2; background: #e7e5de; color: #353c3e; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-element img { width: 28px; height: 28px; flex: 0 0 28px; object-fit: cover; filter: grayscale(.8); border: 0; border-radius: 4px; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-aether-name { min-width: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-aether-locked, :is(.dominion-aetherics-sheet, .da-library-window) .da-aether-invalid { opacity: .55; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-element strong { overflow-wrap: anywhere; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-element.da-active { border: 2px solid var(--da-accent); background: var(--da-soft); box-shadow: 0 0 6px #227b8630; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-element.da-active img { filter: none; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-selection-mark { margin-left: auto; font-weight: bold; flex: 0 0 10px; font-size: 10px; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-power-groups { border: 1px solid #7a9c45; border-top-width: 3px; border-radius: 5px; padding: 8px 10px; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-power-group h3, :is(.dominion-aetherics-sheet, .da-library-window) .da-passives h3 { font-size: 13px; font-weight: bold; margin: 0 0 10px; padding-bottom: 5px; border-bottom: 1px solid #80808055; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-power-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 10px 8px; margin-bottom: 18px; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-power { width: 100%; min-width: 0; text-align: center; position: relative; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-power-icon { display: block; position: relative; width: 60px; height: 60px; padding: 0; margin: 0 auto; border: 2px solid #6d7b7d; border-radius: 5px; overflow: hidden; line-height: 1; background: #1d222b; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-power-icon img { width: 56px; height: 56px; object-fit: cover; border: 0; border-radius: 0; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-power-icon:disabled { opacity: 1; cursor: default; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-locked .da-power-icon img, :is(.dominion-aetherics-sheet, .da-library-window) .da-invalid .da-power-icon img { filter: grayscale(1) brightness(.38); }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-unconfigured .da-power-icon { border-style: dashed; border-color: #b48c41; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-unconfigured .da-power-icon img { filter: grayscale(.8) brightness(.65); }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-available .da-power-icon { border-color: var(--da-accent); box-shadow: 0 0 7px #227b8655; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-state-mark { position: absolute; right: 0; bottom: 0; color: white; background: #13272cce; padding: 2px 3px; font-size: 11px; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-power-name { display: block; font-size: 10px; line-height: 1.25; margin-top: 4px; overflow-wrap: anywhere; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-power-tools { display: flex; justify-content: center; gap: 3px; margin-top: 4px; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-power-tools button { width: 24px; height: 20px; padding: 0; line-height: 18px; font-size: 10px; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-graph button:focus-visible { outline: 2px solid var(--da-accent); outline-offset: 3px; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-passives { margin-top: 14px; padding-top: 8px; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-passives article { padding: 8px; margin-bottom: 6px; border-left: 3px solid var(--da-accent); background: #80808015; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-passives small { display: block; opacity: .7; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-passives p { white-space: pre-wrap; font-size: 12px; margin-bottom: 0; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-empty { font-size: 12px; opacity: .7; grid-column: 1 / -1; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-system-controls { display: block; }
 .da-config .window-content { padding: 16px; overflow-y: auto; }
 .da-config .da-element-definitions { list-style: none; padding: 0; margin: 12px 0; }
 .da-config .da-element-definitions li { display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #80808055; padding: 10px 0; }
@@ -74,7 +71,7 @@
 .da-config .da-check input { flex: 0 0 20px; }
 .da-config .da-match-mode { margin-bottom: 10px; }
 .da-config .da-requirement-preview { border-left: 3px solid #227b86; padding: 8px; margin: 0; background: #80808015; }
-.dominion-aetherics-sheet .da-graph .da-warning { border: 1px solid #b48c41; padding: 8px; font-size: 12px; }
+:is(.dominion-aetherics-sheet, .da-library-window) .da-graph .da-warning { border: 1px solid #b48c41; padding: 8px; font-size: 12px; }
 .da-config .da-passive-row { display: grid; grid-template-columns: 1fr auto; gap: 5px; padding-bottom: 10px; }
 .da-config .da-passive-row textarea { grid-column: 1; }
 .da-config .da-passive-row button { grid-column: 2; grid-row: 1 / 3; }
@@ -84,4 +81,23 @@
 .da-config .da-level-badge { display: inline-block; font-size: 10px; border: 1px solid var(--da-tier-color); border-left-width: 4px; border-radius: 3px; padding: 2px 4px; margin-right: 4px; white-space: nowrap; }
 .da-config [data-prerequisite-choice][hidden], .da-config [data-prerequisite-options][hidden] { display: none; }
 .da-config .da-invalid-choice { color: #a32525; }
-@media (prefers-reduced-motion: reduce) { .dominion-aetherics-sheet .da-graph * { animation: none; transition: none; } }
+.da-library-window .da-library-import summary { cursor: pointer; font-weight: bold; }
+.da-library-window .da-library-import .da-fields { margin-top: 12px; }
+.da-library-window .da-library-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; font-size: 11px; margin: 10px 0; }
+.da-library-window .da-library-legend input { margin: 0; }
+.da-library-window .da-library-aether { min-width: 0; }
+.da-library-window .da-library-inspector { border: 1px solid #80808066; border-radius: 5px; padding: 12px; margin-top: 12px; background: #80808010; }
+.da-library-window .da-library-inspector h3 { font-size: 14px; margin: 0 0 8px; }
+.da-library-window .da-library-inspector p { font-size: 12px; margin: 0 0 10px; overflow-wrap: anywhere; }
+.da-library-window .da-library-inspector [hidden] { display: none; }
+.da-library-window .da-library-relations { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; font-size: 12px; }
+.da-library-window .da-library-relations strong { display: block; margin-bottom: 5px; }
+.da-library-window .da-library-relations button { width: auto; font-size: 11px; line-height: 1.4; padding: 3px 6px; margin: 0 4px 4px 0; }
+.da-library-window .da-forbidden-link { color: #a33e3e; }
+.da-library-window .da-connections path { stroke: #227b86; stroke-width: 1.7; opacity: .75; }
+.da-library-window .da-connections path[data-link-kind="forbidden"] { stroke: #a33e3e; stroke-dasharray: 5 4; }
+.da-library-window .da-library-selected > .da-element, .da-library-window .da-library-selected > .da-power-icon { border-color: var(--da-accent); box-shadow: 0 0 0 2px var(--da-accent); }
+.da-library-window .da-library-related > .da-element, .da-library-window .da-library-related > .da-power-icon { border-color: var(--da-accent); }
+.da-library-window .da-library-dim { opacity: .45; }
+.da-library-window .da-library-selected .da-element img { filter: none; }
+@media (prefers-reduced-motion: reduce) { :is(.dominion-aetherics-sheet, .da-library-window) .da-graph * { animation: none; transition: none; } }

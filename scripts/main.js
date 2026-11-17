@@ -80,6 +80,12 @@ function registerSheet() {
       return app.render(true);
     }
   };
+  game.settings.registerMenu(ID, "globalLibrary", {
+    name: "DA.GlobalLibrary", label: "DA.OpenGlobalLibrary", hint: "DA.LibrarySettingsHint", icon: "fas fa-book", restricted: true,
+    type: class GlobalLibrarySettingsMenu extends foundry.appv1.api.FormApplication {
+      render() { return services.openLibrary(); }
+    }
+  });
   SheetClass = createDominionSheet(Base, services);
   foundry.applications.apps.DocumentSheetConfig.registerSheet(CONFIG.Actor.documentClass, ID, SheetClass, { types: [...SUPPORTED_ACTOR_TYPES], makeDefault: false, label: "DA.Title" });
   game.modules.get(ID).api = Object.freeze({

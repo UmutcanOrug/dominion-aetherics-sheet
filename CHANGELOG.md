@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.0 — 2026-11-17
+
+- Replace the global library's separate lists with the character Powers layout: four colored Active Aether levels and world Power icons on the right, sharing the same scoped CSS.
+- Add hover/focus arrows, pinned node inspection, direct incoming/outgoing navigation and an all-connections view. Required and forbidden edges remain distinct; rule descriptions retain AND/OR/exact semantics.
+- Add GM-only Global Library access in Configure Settings using the existing cached world catalog. Actor-context copy controls remain available only from Actor entry points.
+- Keep creation/import, editing, configuration, deletion and explicit Power copying in the graph. Catalog inspection never activates Aethers, casts Powers or changes Actor/passive/PP state.
+- 73 automated tests passed. Wide/compact Turkish library layouts and real relationship-controller behavior visually checked in an isolated browser fixture; live Foundry/Forge acceptance remains pending.
+
 ## 0.4.0 — 2026-11-17
 
 - Rename user-facing elements to Active Aethers and arrange compact buttons in four fixed level columns: orange, navy, purple and cyan. Powers retain a separate green area on the right; narrow sheets scroll horizontally.

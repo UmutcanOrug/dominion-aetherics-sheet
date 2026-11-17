@@ -21,6 +21,7 @@ const { PowerRequirementApp } = await import("../scripts/apps/power-requirements
 const { ElementEditorApp } = await import("../scripts/apps/element-manager.js");
 const { ElementManagerApp } = await import("../scripts/apps/element-manager.js");
 const { GlobalLibraryApp } = await import("../scripts/apps/global-library.js");
+const { buildLibraryGraph } = await import("../scripts/library-graph.js");
 const english = JSON.parse(await fs.readFile(new URL("../lang/en.json",import.meta.url),"utf8"));
 const translate = key => key.split(".").reduce((obj,part) => obj?.[part],english) ?? key;
 Handlebars.registerHelper("localize",translate);
@@ -260,7 +261,7 @@ test("legacy atom icon and missing images get a bundled display fallback without
 test("Global Library controls create global Powers and add them only to the contextual Actor", async () => {
   const { services, actor } = setupDOM(); const app = new GlobalLibraryApp(services, actor);
   let createName, addedActor, addedPower, renders = 0;
-  const power = { id: "global-power", name: "Global Water", type: "power", img: DEFAULT_ICON, actor: null };
+  const power = { id: "global-power", name: "Global Water", documentName: "Item", type: "power", img: DEFAULT_ICON, actor: null, getFlag: () => undefined, testUserPermission: () => true };
   game.items.push(power);
   services.powerLibrary.create = async name => { createName = name; return { sheet: { render: () => { renders++; } } }; };
   services.powerLibrary.addToActor = async (target, item) => { addedActor = target; addedPower = item; };
@@ -272,7 +273,65 @@ test("Global Library controls create global Powers and add them only to the cont
   await new Promise(resolve => setTimeout(resolve, 5)); assert.equal(createName, "Water Template");
   root.querySelector('[data-library-action="add-power"]').click();
   await new Promise(resolve => setTimeout(resolve, 5)); assert.equal(addedActor, actor); assert.equal(addedPower, power);
-  root.querySelector('[data-library-tab="powers"]').click(); assert.equal(app.libraryTab, "powers"); assert.ok(renders >= 3);
+  assert.ok(root.querySelector('.da-network .da-power-groups')); assert.ok(renders >= 2);
+  app.graph.dispose();
+});
+
+async function libraryFixture(actorContext = true) {
+  const { services, actor } = setupDOM(); actor.flags[ID].assignedElements = [];
+  await services.registry.save({ id: "C", name: "Clay", level: 2, prerequisites: { mode: "any", ids: ["H", "O"] }, passives: [], effects: [] });
+  await services.registry.save({ id: "Fe", name: "Warden", level: 3, prerequisites: { mode: "all", ids: ["H", "C"] }, passives: [], effects: [] });
+  const power = new Power(actor, "H"); power.actor = null; power.name = "Clay Power"; power.testUserPermission = () => true; game.items.push(power);
+  await configure(power, [["C"]], { forbidden: ["O"], exact: false });
+  const app = new GlobalLibraryApp(services, actorContext ? actor : null), root = document.createElement("div");
+  root.innerHTML = await foundry.applications.handlebars.renderTemplate("modules/dominion-aetherics-sheet/templates/global-library.hbs", app.getData());
+  app.activateListeners([root]);
+  root.querySelector(".da-network").getBoundingClientRect = () => ({ width: 1100, height: 400, left: 0, top: 0 });
+  return { services, actor, power, app, root };
+}
+
+test("library graph includes the whole catalog in tier columns and world Powers with required/forbidden links", async () => {
+  const { services, actor, app, root } = await libraryFixture();
+  assert.deepEqual([...root.querySelectorAll('[data-aether-level]')].map(node => node.dataset.aetherLevel), ["1", "2", "3", "4"]);
+  assert.equal(root.querySelectorAll('.da-tier [data-library-node]').length, 4);
+  assert.equal(root.querySelectorAll('.da-power-groups [data-library-node]').length, 1);
+  assert.deepEqual(services.assignments.getIds(actor), []);
+  const graph = buildLibraryGraph(services);
+  assert.ok(graph.edges.some(edge => edge.from === "aether:C" && edge.to === "power:H" && edge.kind === "required"));
+  assert.ok(graph.edges.some(edge => edge.from === "aether:O" && edge.to === "power:H" && edge.kind === "forbidden"));
+  assert.ok(graph.edges.some(edge => edge.from === "aether:C" && edge.to === "aether:Fe"));
+  assert.match(graph.elements.find(node => node.id === "C").rule, /H OR O/);
+  assert.match(graph.elements.find(node => node.id === "Fe").rule, /H AND Clay/);
+  assert.equal(root.querySelectorAll('[data-library-action="add-power"]').length, 1);
+  app.graph.dispose();
+});
+
+test("library inspection pins incoming/outgoing links including inactive Aethers without mutating any Actor", async () => {
+  const { actor, power, app, root } = await libraryFixture();
+  const before = structuredClone({ flags: actor.flags, system: actor.system, powerFlags: power.flags });
+  root.querySelector('[data-library-node="aether:C"] [data-library-select]').click();
+  assert.equal(app.selectedKey, "aether:C");
+  assert.match(root.querySelector('[data-library-rule]').textContent, /H OR O/);
+  assert.match(root.querySelector('[data-library-outgoing]').textContent, /Warden/);
+  assert.match(root.querySelector('[data-library-outgoing]').textContent, /Clay Power/);
+  assert.equal(root.querySelectorAll('path[data-link-kind]').length, 4);
+  root.querySelector('[data-library-outgoing] [data-library-select="power:H"]').click();
+  assert.equal(app.selectedKey, "power:H"); assert.match(root.querySelector('[data-library-incoming]').textContent, /Forbidden: O/);
+  assert.equal(root.querySelectorAll('path[data-link-kind="forbidden"]').length, 1);
+  assert.equal(root.querySelector('[data-library-node="power:H"] [data-library-select]').getAttribute("aria-pressed"), "true");
+  assert.equal(actor.updates.length, 0); assert.equal(actor.effects.length, 0);
+  assert.deepEqual({ flags: actor.flags, system: actor.system, powerFlags: power.flags }, before);
+  app.graph.dispose();
+});
+
+test("world library has no copy-to-Actor action; all-links preference survives rerender and stale listeners stop", async () => {
+  const { app, root } = await libraryFixture(false);
+  assert.equal(root.querySelectorAll('[data-library-action="add-power"]').length, 0);
+  const all = root.querySelector('[data-library-all-links]'); all.checked = true; all.dispatchEvent(new dom.window.Event("change"));
+  assert.equal(app.showAllConnections, true); assert.equal(root.querySelectorAll('path[data-link-kind]').length, 6);
+  assert.equal(app.getData().showAllConnections, true);
+  app.graph.dispose();
+  root.querySelector('[data-library-node="aether:C"] [data-library-select]').click(); assert.equal(app.selectedKey, null);
 });
 
 test("four ordered Active Aether columns retain the separate Power area and gate higher nodes", async () => {

@@ -4,11 +4,11 @@ import { setup, Actor, Effect, element, source } from "./helpers.mjs";
 import { ID } from "../scripts/constants.js";
 
 async function boot(tag, definitions) {
-  const { values }=setup(definitions); const callbacks=new Map(), registrations=[], settings=new Map(), events=new Map();
+  const { values }=setup(definitions); const callbacks=new Map(), registrations=[], settings=new Map(), menus=new Map(), events=new Map();
   globalThis.Hooks={ once:(name,fn)=>callbacks.set(name,fn), on:(name,fn)=>events.set(name,fn) };
   class ActorSheet {};
   class CharacterSheet extends ActorSheet {};
-  class App {};
+  class App { render(force) { this.rendered = force; return this; } };
   globalThis.foundry={appv1:{api:{Application:App,FormApplication:App},sheets:{ActorSheet}},applications:{apps:{DocumentSheetConfig:{registerSheet:(...args)=>registrations.push(args)}}}};
   const officialDefaults={character:"swade.CharacterSheet",npc:"swade.SwadeNPCSheet"};
   globalThis.CONFIG={Actor:{documentClass:Actor,sheetClasses:officialDefaults}};
@@ -16,9 +16,10 @@ async function boot(tag, definitions) {
   const module={}; game.modules=new Map([["dominion-aetherics-sheet",module]]); game.swade={sheets:{CharacterSheet}}; game.system={id:"swade",version:"5.1.0"}; game.release={generation:13};
   game.actors=[]; game.scenes=[];
   game.settings.register=(_id,key,options)=>{ settings.set(key,options); if(!values.has(key)) values.set(key,options.default); };
+  game.settings.registerMenu=(_id,key,options)=>menus.set(key,options);
   await import(`../scripts/main.js?test=${tag}`);
   callbacks.get("init")();
-  return {values,callbacks,registrations,settings,events,module,CharacterSheet,officialDefaults};
+  return {values,callbacks,registrations,settings,menus,events,module,CharacterSheet,officialDefaults};
 }
 
 async function until(predicate) {
@@ -88,4 +89,16 @@ test("world prerequisite edits reconcile stored upper-level selections and effec
   settings.get("elements").onChange();
   await until(() => actor.effects.length === 0 && actor.flags[ID].activeElements.length === 1);
   assert.deepEqual(actor.flags[ID].activeElements, ["H"]); assert.deepEqual(actor.flags[ID].assignedElements, ["H", "O", "C"]);
+});
+
+test("Configure Settings opens the GM-only world library through the existing API without Actor context", async () => {
+  const { menus, module } = await boot("settings-library");
+  const menu = menus.get("globalLibrary"); assert.ok(menu); assert.equal(menu.restricted, true);
+  assert.equal(menu.label, "DA.OpenGlobalLibrary");
+  const app = new menu.type().render(true);
+  assert.equal(app.actor, null); assert.equal(app.rendered, true);
+  assert.equal(app, module.api.openGlobalLibrary());
+  game.user.isGM = false;
+  assert.throws(() => new menu.type().render(true), /GMOnly/);
+  game.user.isGM = true;
 });

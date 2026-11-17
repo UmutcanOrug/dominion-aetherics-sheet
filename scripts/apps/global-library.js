@@ -1,29 +1,40 @@
 import { ID, ROOT, assertActor, assertGM, report, t } from "../constants.js";
-import { bindImageFallbacks, imagePath } from "../images.js";
+import { bindImageFallbacks } from "../images.js";
 import { ElementEditorApp } from "./element-manager.js";
 import { PowerRequirementApp } from "./power-requirements.js";
+import { buildLibraryGraph, LibraryGraphController } from "../library-graph.js";
 
 export class GlobalLibraryApp extends foundry.appv1.api.Application {
   constructor(services, actor = null, options = {}) {
     assertGM(); if (actor) assertActor(actor, true);
     super({ ...options, id: `${ID}-library-${(actor?.uuid ?? "world").replace(/[^A-Za-z0-9_-]/g, "-")}` });
-    this.services = services; this.actor = actor; this.libraryTab = "elements";
+    this.services = services; this.actor = actor; this.selectedKey = null; this.showAllConnections = false;
+    this.linkId = `${ID}-links-${(actor?.uuid ?? "world").replace(/[^A-Za-z0-9_-]/g, "-")}`;
   }
   static get defaultOptions() {
-    return foundry.utils.mergeObject(super.defaultOptions, { classes: ["da-config"], template: `${ROOT}/templates/global-library.hbs`, width: 760, height: 640, resizable: true });
+    return foundry.utils.mergeObject(super.defaultOptions, { classes: ["da-config", "da-library-window"], template: `${ROOT}/templates/global-library.hbs`, width: 1180, height: 760, resizable: true });
   }
   get title() { return t("GlobalLibrary"); }
   getData() {
     assertGM();
     const candidates = [];
     for (const actor of game.actors) for (const item of actor.items) if (item.type === "power") candidates.push({ uuid: item.uuid, label: `${actor.name} / ${item.name}` });
-    return { actorName: this.actor?.name, hasActor: !!this.actor, elementsTab: this.libraryTab === "elements", powersTab: this.libraryTab === "powers",
-      elements: this.services.registry.get().map(e => ({ ...e, icon: imagePath(e.icon) })), powers: this.services.powerLibrary.list().map(item => ({ id: item.id, name: item.name, img: imagePath(item.img) })), candidates };
+    this.catalog = buildLibraryGraph(this.services);
+    return { ...this.catalog, actorName: this.actor?.name, hasActor: !!this.actor, linkId: this.linkId, showAllConnections: this.showAllConnections, candidates };
+  }
+  async _renderInner(data, options) {
+    this.graph?.dispose();
+    return super._renderInner(data, options);
+  }
+  async close(options) {
+    this.graph?.dispose();
+    return super.close(options);
   }
   activateListeners(html) {
     super.activateListeners(html);
-    const root = html[0]; bindImageFallbacks(root);
-    root.querySelectorAll("[data-library-tab]").forEach(button => button.addEventListener("click", () => { this.libraryTab = button.dataset.libraryTab; this.render(false); }));
+    this.graph?.dispose();
+    const root = html[0]; this.graph = new LibraryGraphController(this, root, this.catalog); this.graph.bind();
+    const options = { signal: this.graph.abort.signal }; bindImageFallbacks(root, options);
     root.addEventListener("click", async event => {
       const button = event.target.closest("[data-library-action]");
       if (!button) return;
@@ -56,6 +67,6 @@ export class GlobalLibraryApp extends foundry.appv1.api.Application {
         }
       } catch (error) { report(error); }
       finally { button.disabled = false; }
-    });
+    }, options);
   }
 }
