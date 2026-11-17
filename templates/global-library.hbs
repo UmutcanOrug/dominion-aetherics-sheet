@@ -7,7 +7,7 @@
   {{#if hasActor}}<p class="da-help">{{localize "DA.LibraryActor"}}: <strong>{{actorName}}</strong></p>{{/if}}
   <details class="da-library-import">
     <summary>{{localize "DA.LibraryPowerTools"}}</summary>
-    <div class="da-fields"><input data-power-name type="text" maxlength="100" aria-label="{{localize 'DA.Name'}}" placeholder="{{localize 'DA.Name'}}"><button type="button" data-library-action="create-power">{{localize "DA.CreatePower"}}</button></div>
+    <div class="da-fields da-library-create-power"><input data-power-name type="text" maxlength="100" aria-label="{{localize 'DA.Name'}}" placeholder="{{localize 'DA.Name'}}"><button type="button" data-library-action="create-power">{{localize "DA.CreatePower"}}</button></div>
     <label>{{localize "DA.ExistingActorPowers"}}<select data-power-choice><option value="">—</option>{{#each candidates}}<option value="{{uuid}}">{{label}}</option>{{/each}}</select></label>
     <label>{{localize "DA.PowerUUID"}}<input data-power-uuid type="text" placeholder="Actor.…Item.… / Compendium.…"></label>
     <button type="button" data-library-action="import-power">{{localize "DA.ImportPower"}}</button>

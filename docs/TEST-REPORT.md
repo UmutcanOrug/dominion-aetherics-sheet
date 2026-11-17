@@ -1,8 +1,10 @@
-# v0.5.0 validation report
+# v0.5.1 validation report
 
 Date: 2026-11-17. Target: Foundry V13 Build 351, SWADE 5.1.0, swade-tools-fix 2.2.4, Forge hosting.
 
 ## Executed
+
+0.5.1 adds a scoped CSS sizing fix to the global Power creation row. Its wide/compact layout is checked with the real template/CSS and host-style full-width button/input defaults, including an entered name. No new tests are added for this reversible visual adjustment; the existing service/DOM suite is retained.
 
 Node 24.22.1 automated tests: **73 passed, 0 failed**. Service tests use mocked Foundry documents/permissions. DOM tests render the actual distributed SWADE 5.1.0 Powers partial with Handlebars/jsdom, a mocked superclass and documents. The Tools contract test executes the real pinned `scripts/st.js` wrapper, mocking only imported dialog/roll boundaries. These tests do not execute a licensed Foundry server or all of SWADE Tools' runtime code.
 

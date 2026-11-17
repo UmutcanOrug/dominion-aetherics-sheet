@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.1 — 2026-11-17
+
+- Fix the global Power creation row under Foundry's full-width button defaults: the name input expands and the create button uses its content width. Narrow windows can wrap the row.
+- Scope the sizing fix to that row; no Actor, Power or rule data changes.
+
 ## 0.5.0 — 2026-11-17
 
 - Replace the global library's separate lists with the character Powers layout: four colored Active Aether levels and world Power icons on the right, sharing the same scoped CSS.

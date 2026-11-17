@@ -2,7 +2,7 @@
   "id": "dominion-aetherics-sheet",
   "title": "Dominion Aetherics Sheet",
   "description": "An optional SWADE 5.1.0 character and NPC sheet with four Active Aether levels and a visual global Aether/Power library, also accessible from Configure Settings.",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "authors": [{ "name": "Umutcan Oruğ", "url": "https://github.com/UmutcanOrug" }],
   "compatibility": { "minimum": "13", "verified": "13.351", "maximum": "13" },
   "relationships": {
@@ -17,7 +17,7 @@
   ],
   "url": "https://github.com/UmutcanOrug/dominion-aetherics-sheet",
   "manifest": "https://github.com/UmutcanOrug/dominion-aetherics-sheet/releases/latest/download/module.json",
-  "download": "https://github.com/UmutcanOrug/dominion-aetherics-sheet/releases/download/v0.5.0/module.zip",
+  "download": "https://github.com/UmutcanOrug/dominion-aetherics-sheet/releases/download/v0.5.1/module.zip",
   "bugs": "https://github.com/UmutcanOrug/dominion-aetherics-sheet/issues",
   "license": "LICENSE",
   "readme": "README.md"

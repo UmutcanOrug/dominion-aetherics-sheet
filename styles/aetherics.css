@@ -83,6 +83,9 @@
 .da-config .da-invalid-choice { color: #a32525; }
 .da-library-window .da-library-import summary { cursor: pointer; font-weight: bold; }
 .da-library-window .da-library-import .da-fields { margin-top: 12px; }
+.da-library-window .da-library-create-power { flex-wrap: wrap; }
+.da-library-window .da-library-create-power > input { flex: 1 1 240px; min-width: 160px; width: auto; }
+.da-library-window .da-library-create-power > button { flex: 0 0 auto; width: auto; max-width: 100%; padding-inline: 12px; }
 .da-library-window .da-library-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; font-size: 11px; margin: 10px 0; }
 .da-library-window .da-library-legend input { margin: 0; }
 .da-library-window .da-library-aether { min-width: 0; }

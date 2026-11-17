@@ -2,7 +2,7 @@
 
 Foundry VTT V13 / **SWADE tam olarak 5.1.0** için isteğe bağlı karakter ve NPC kağıdı. Normal NPC ve NPC Wild Card desteklenir. Powers sekmesinde dört seviyeli **Active Aether** sütunları ve sağda güçler bulunur. Resmi SWADE kağıtlarını kaldırmaz, varsayılan yapmaz ve sistem dosyalarını değiştirmez.
 
-**v0.5.0 test sürümüdür.** Global Kütüphane artık karakterin Powers sekmesi gibi dört Active Aether seviyesi ve sağda güç ikonlarıyla açılır. Önkoşul/güç bağlantıları, detay paneli ve Configure Settings erişimi eklenmiştir. Hedef Foundry V13 Build 351'dir; `verified` metadatası kullanıcının önceki temel kullanım raporuna dayanır. 73 otomatik test ve bağımsız tarayıcı düzen önizlemesi geçmiştir; canlı Foundry/Forge kabul testi yapılmamıştır. SWADE 5.2+ ve Foundry 14 desteklenmez.
+**v0.5.1 test sürümüdür.** Global Kütüphane karakterin Powers sekmesi gibi dört Active Aether seviyesi ve sağda güç ikonlarıyla açılır. Güç oluşturma satırında ad alanı geniş tutulur; oluşturma düğmesi yalnızca metni kadar yer kaplar. Önkoşul/güç bağlantıları, detay paneli ve Configure Settings erişimi korunur. Hedef Foundry V13 Build 351'dir; `verified` metadatası kullanıcının önceki temel kullanım raporuna dayanır. 73 otomatik test ve bağımsız tarayıcı düzen önizlemesi geçmiştir; canlı Foundry/Forge kabul testi yapılmamıştır. SWADE 5.2+ ve Foundry 14 desteklenmez.
 
 ## Kurulum ve yeni karakterde deneme
 
