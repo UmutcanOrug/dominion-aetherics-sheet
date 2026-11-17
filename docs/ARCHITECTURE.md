@@ -75,7 +75,15 @@ The global catalog now shares the character graph's scoped layout/CSS: four comp
 
 The restricted `globalLibrary` submenu uses [Foundry V13 `ClientSettings.registerMenu`](https://foundryvtt.com/api/v13/classes/foundry.helpers.ClientSettings.html#registerMenu). Its FormApplication adapter opens the same cached `services.openLibrary()` world instance used by the public API, with GM authorization checked again. It has no Actor context and therefore no copy-to-Actor buttons. Actor-sheet entry points retain their exact contextual Actor, including unlinked tokens. Registration is still limited to the supported Foundry/SWADE versions.
 
-## Stored data
+## Confirmed prerequisite activation (0.5.2)
+
+Editable Actor graph nodes remain clickable when their prerequisites are inactive or invalid, so they can explain activation requirements. `planAetherActivation` recursively follows strictly lower-tier references using the Actor's existing grants, producing either a complete proposed addition list or named missing/invalid entries. AND includes every needed branch. OR reuses active alternatives or selects a feasible branch, preferring fewer new selections and preserving configured order on ties. This is a branch heuristic, not a global minimum-set solver. Existing malformed/deleted registry references still fail closed.
+
+`toggleAetherWithPrompt` previews inactive prerequisite names/levels using an escaped Handlebars template and [Foundry V13 DialogV2.confirm](https://foundryvtt.com/api/v13/classes/foundry.applications.api.DialogV2.html#confirm). Cancellation/close does not write. A per-Actor pending guard prevents duplicate dialogs. Missing grants are reported by name and never auto-granted. No-prerequisite/already-satisfied activation and normal cascading deactivation remain direct actions.
+
+After confirmation, `ElementSelectionService.activate` recomputes the plan inside the existing Actor queue, rejects newly required additions outside the approved list and retains fresh unrelated active selections. Ownership, assignments, schema and max-active limits are checked before one Actor selection update; passive synchronization follows the existing service path. This preserves base/synthetic Actor isolation and existing shared-source cleanup. The public `setActiveElements` API remains strict and never opens UI or fills prerequisites implicitly.
+
+## State fields
 
 - Registry: world setting `dominion-aetherics-sheet.elements`, `{ schemaVersion: 1, elements: [...] }`.
 - Selection: Actor flags `activeElements` and `schemaVersion` in the module namespace; stable IDs only.

@@ -2,6 +2,7 @@ import { ROOT, report, t } from "./constants.js";
 import { PowerRequirementApp } from "./apps/power-requirements.js";
 import { bindImageFallbacks, imagePath } from "./images.js";
 import { AETHER_LEVELS, aetherLevel, aetherStatus, describeAetherPrerequisites } from "./services/aether-rules.js";
+import { toggleAetherWithPrompt } from "./apps/activate-aether.js";
 
 export class PowerGraphRenderer {
   constructor(sheet, services) { this.sheet = sheet; this.services = services; }
@@ -37,7 +38,7 @@ export class PowerGraphRenderer {
     const elementData = this.services.assignments.get(actor).map(e => {
       const status = aetherStatus(e, [...active], definitions), level = aetherLevel(e), selected = active.has(e.id);
       return { ...e, level, icon: imagePath(e.icon), active: selected, available: status.available, state: status.state,
-        disabled: !this.sheet.isEditable || (!selected && !status.available),
+        disabled: !this.sheet.isEditable,
         tooltip: `${e.name} — ${t("Level")} ${level} — ${describeAetherPrerequisites(e, definitions)}${e.description ? ` — ${e.description}` : ""}` };
     });
     const tiers = AETHER_LEVELS.map(level => ({ level, elements: elementData.filter(e => e.level === level) }));
@@ -65,7 +66,7 @@ export class PowerGraphRenderer {
         if (action === "toggle") {
           if (!this.sheet.isEditable) return;
           button.disabled = true;
-          try { await this.services.selections.toggle(actor, button.dataset.elementId); }
+          try { await toggleAetherWithPrompt(this.services, actor, button.dataset.elementId); }
           finally { button.disabled = false; }
           return;
         }

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.2 — 2026-11-17
+
+- Make higher-level Actor Aether nodes clickable even with inactive prerequisites. Preview the complete required chain by name/level and ask before activating it with the target.
+- Name missing Actor grants or broken definitions and block the whole activation; never grant prerequisites implicitly. OR reuses an active alternative or previews one feasible assigned branch.
+- Cancel/close makes no changes. Revalidate inside the Actor queue after confirmation, preserve unrelated selections, enforce ownership/limits and reject unapproved additions after rule changes.
+- Keep cascading deactivation, shared passives, character/NPC/token isolation and strict public activation APIs.
+- 91 automated tests passed; real module flow/planner/template verified in an isolated browser fixture with fake Actors and a DialogV2 host adapter. Live Foundry acceptance remains pending.
+
 ## 0.5.1 — 2026-11-17
 
 - Fix the global Power creation row under Foundry's full-width button defaults: the name input expands and the create button uses its content width. Narrow windows can wrap the row.

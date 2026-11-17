@@ -46,7 +46,7 @@
     "NoPowers": "No powers in this group. Add a Power using the system control above.",
     "NoActivePassives": "Activate an assigned Active Aether to display its passives.",
     "ActivePassives": "Active Aether passives",
-    "GraphHelp": "Activate Active Aethers from level 1 to 4, left to right. Higher levels may require active lower levels. Click an available Power on the right to open SWADE Tools. Hover a node to see connections.",
+    "GraphHelp": "Click an Active Aether to activate it. If lower prerequisites are inactive, review their list and confirm. Missing Actor grants block activation with a named warning. Available Powers on the right open SWADE Tools. Hover a node to see connections.",
     "ToolsRequired": "Enable SWADE Tools (swade-tools-fix 2.2.4 or a compatible version) to use powers from this graph. Its casting interface must be ready; the system chat card will not be opened instead.",
     "Name": "Name",
     "Symbol": "Symbol (optional)",
@@ -126,6 +126,14 @@
     "MissingAetherPrerequisite": "A required Active Aether was removed. Reconfigure this entry.",
     "AetherLowerLevelsOnly": "Prerequisites must belong to strictly lower levels; self and same/higher-level references are not allowed.",
     "AetherLevelInUse": "Another Active Aether requires this entry at a lower level. Update its prerequisites before changing this level.",
-    "AetherPrerequisitesNotMet": "Activate the required lower-level Active Aethers first."
+    "AetherPrerequisitesNotMet": "Activate the required lower-level Active Aethers first.",
+    "ActivationConfirmTitle": "Activate prerequisites?",
+    "ActivationConfirmQuestion": "Would you like to activate the following prerequisites?",
+    "ActivationConfirmResult": "Confirming activates the listed prerequisites and the requested Active Aether together. Already-active selections stay active. Canceling changes nothing.",
+    "ActivationConfirmYes": "Activate listed Aethers",
+    "ActivationConfirmNo": "Cancel",
+    "ActivationMissingPrerequisites": "Missing prerequisites on this Actor: {names}. Nothing was activated. Ask the GM to grant the required Active Aethers.",
+    "ActivationInvalidPrerequisites": "Invalid prerequisite configuration: {names}. Nothing was activated; the GM must repair these definitions.",
+    "ActivationPlanChanged": "Prerequisites changed while the dialog was open. Nothing was activated. Click the Active Aether again to review the new list."
   }
 }

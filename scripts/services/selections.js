@@ -1,5 +1,6 @@
 import { ID, SCHEMA, assertActor, t } from "../constants.js";
 import { resolveActiveAethers } from "./aether-rules.js";
+import { activationFailureMessage, planAetherActivation } from "./activation-plan.js";
 
 export class ElementSelectionService {
   constructor(registry, assignments) { this.registry = registry; this.assignments = assignments; }
@@ -22,6 +23,24 @@ export class ElementSelectionService {
     return this.#change(actor, () => {
       const current = this.get(actor);
       return current.includes(id) ? current.filter(e => e !== id) : [...current, id];
+    });
+  }
+  planActivation(actor, id) {
+    assertActor(actor, true);
+    return planAetherActivation(id, this.get(actor), this.assignments.getIds(actor), this.registry.get());
+  }
+  activate(actor, id, approvedIds) {
+    assertActor(actor, true);
+    if (!Array.isArray(approvedIds) || approvedIds.some(key => typeof key !== "string")) throw new Error(t("InvalidSelection"));
+    const approved = new Set(approvedIds);
+    return this.#change(actor, () => {
+      const plan = this.planActivation(actor, id);
+      if (!plan.ok) {
+        const error = new Error(activationFailureMessage(plan, this.registry.get())); error.activationPlan = plan; throw error;
+      }
+      // Another client, registry edit or grant revocation may have changed the preview.
+      if (plan.additions.some(key => !approved.has(key))) throw new Error(t("ActivationPlanChanged"));
+      return [...this.get(actor), ...plan.additions];
     });
   }
   #change(actor, read) {

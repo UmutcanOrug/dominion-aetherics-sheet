@@ -1,12 +1,12 @@
-# v0.5.1 validation report
+# v0.5.2 validation report
 
 Date: 2026-11-17. Target: Foundry V13 Build 351, SWADE 5.1.0, swade-tools-fix 2.2.4, Forge hosting.
 
 ## Executed
 
-0.5.1 adds a scoped CSS sizing fix to the global Power creation row. Its wide/compact layout is checked with the real template/CSS and host-style full-width button/input defaults, including an entered name. No new tests are added for this reversible visual adjustment; the existing service/DOM suite is retained.
+0.5.2 adds confirmed activation of assigned prerequisite chains. Tests cover full AND chains, one feasible OR branch, existing active alternatives, missing direct/nested grants, removed/invalid definitions, cancel/close, one pending dialog, stale approval, grant revocation, selection limits, ownership and character/NPC/token isolation. The 0.5.1 scoped creation-row sizing fix remains in place.
 
-Node 24.22.1 automated tests: **73 passed, 0 failed**. Service tests use mocked Foundry documents/permissions. DOM tests render the actual distributed SWADE 5.1.0 Powers partial with Handlebars/jsdom, a mocked superclass and documents. The Tools contract test executes the real pinned `scripts/st.js` wrapper, mocking only imported dialog/roll boundaries. These tests do not execute a licensed Foundry server or all of SWADE Tools' runtime code.
+Node 24.22.1 automated tests: **91 passed, 0 failed**. Service tests use mocked Foundry documents/permissions. DOM tests render the actual distributed SWADE 5.1.0 Powers partial with Handlebars/jsdom, a mocked superclass and documents. DialogV2.confirm is a contract mock; the actual confirmation template is rendered and checked, including escaped names. Independent direct activations still queue normally while duplicate prerequisite dialogs are suppressed. The Tools contract test executes the real pinned `scripts/st.js` wrapper, mocking only imported dialog/roll boundaries. These tests do not execute a licensed Foundry server or all of SWADE Tools' runtime code.
 
 - Settings submenu registration, restricted GM access, shared world-library instance and absence of Actor context.
 - Full catalog regardless of assignments; native world Powers retain the separate right-hand area, with namespaced node keys for colliding IDs.
@@ -18,7 +18,7 @@ Node 24.22.1 automated tests: **73 passed, 0 failed**. Service tests use mocked 
 - Four levels, strictly lower references, optional no-prerequisite higher levels, AND/OR prerequisites and level 3/4 chains.
 - Self/same/higher-tier, missing, duplicate and malformed references rejected; changes invalidating existing dependents rejected.
 - Cascading deactivation and shared-passive cleanup after prerequisite deactivation, grant revocation, deletion or rule changes; another Actor/base token remains unchanged.
-- Unordered atomic activation accepts complete valid sets; invalid newly requested activations fail before writes. No automatic prerequisite activation.
+- Unordered atomic activation accepts complete valid sets; invalid newly requested activations fail before writes. UI prerequisite activation requires a complete grant-respecting plan and explicit confirmation; raw set/toggle APIs stay strict.
 - Power availability and Tools dispatch use the dependency-resolved selection set.
 - DOM: four ordered tier containers, Power area last, compact icons, locked buttons, level/prerequisite editor fields, lower-tier filtering and optional/AND/OR persistence.
 - Registry-change hook cleans invalid active NPC selections and their managed effects after a new prerequisite is introduced.
@@ -54,7 +54,7 @@ Node 24.22.1 automated tests: **73 passed, 0 failed**. Service tests use mocked 
 
 `node tools/check.mjs` validates manifest URLs/version, required files, JavaScript syntax, template compilation and both language key sets. The build validates the ZIP root manifest and excludes references, dependencies, tests and local publishing helpers. Public release assets are verified separately after publishing.
 
-The actual module graph/editor templates and CSS were visually inspected in an isolated local browser fixture at wide and compact sheet widths for 0.4.0. For 0.5.0, the actual library template, shared CSS and `LibraryGraphController` were run in a Turkish local browser fixture at wide/compact widths: four ordered tiers, right-hand Powers, pinned inspection, required/forbidden arrows and all-links mode were checked. Narrow windows preserve horizontal scrolling. A small host-style shim replaces the complete Foundry/SWADE runtime stylesheet, so this is layout/controller evidence only. No live world was changed.
+The actual module graph/editor templates and CSS were visually inspected in an isolated local browser fixture at wide and compact sheet widths for 0.4.0. For 0.5.0, the actual library template, shared CSS and `LibraryGraphController` were run in a Turkish local browser fixture at wide/compact widths. 0.5.1 checked the creation row with host full-width button defaults. For 0.5.2, the actual graph, activation flow, planner and selection services ran with fake browser Actors and a DialogV2 host adapter: a level-4 request listed its full inactive chain, confirmation opened exactly that chain/target and unlocked its Power; a missing Water grant produced a named warning and left all selections inactive. These fixtures replace Foundry core/styling and are not live-world evidence. No live world was changed.
 
 ## Not executed in a live world
 
@@ -86,6 +86,7 @@ Keep a reference character on the official sheet. Make a second new character an
 | P: tier configuration and isolation | Edit levels/rules in Global Library; verify lower-only choices, persistence after reload and legacy level-1 defaults. Revoking a required grant or deleting a required definition affects only dependent selections. Another Actor keeps independent state. Existing Items, recipes, sheet choice and PP stay intact. | Pending |
 | Q: visual library | Open the library with no active Aethers. Inspect level dependencies and a Power's AND/OR, forbidden and exact rules; pin a node, follow related names, then show all connections. Check wide/narrow resize, edits, deletion and reopening. Catalog inspection must not select Aethers, create effects, spend PP or cast. | Pending |
 | R: Configure Settings | As GM, open Configure Settings → Dominion Aetherics Sheet → Open Global Library. The world catalog opens without an Actor or grant buttons. The Actor-sheet entry still offers copying only to that Actor. Players cannot access either library entry. | Pending |
+| S: prerequisite confirmation | As owner, click a level-3/4 Aether with assigned but inactive prerequisites. Check the complete named list, cancel/close, then confirm and verify one complete chain activation, passives and Power states. Repeat with a missing nested grant, OR alternatives, max-active limit and a rule/grant change while the dialog is open. Missing entries must be named and cause no new activations. | Pending |
 
 Also test a removed element, an unconfigured power, an explicit always-available power, GM-only configuration, an owner player, an observer, and disconnection of the current effect authority. If another module rewrites power rows, inspect its integration separately. Clear selected elements before disabling this module if you want its passive copies removed.
 

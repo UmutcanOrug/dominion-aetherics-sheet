@@ -46,7 +46,7 @@
     "NoPowers": "Bu grupta güç yok. Yukarıdaki sistem düğmesiyle güç ekleyebilirsiniz.",
     "NoActivePassives": "Pasiflerini görmek için atanmış bir Active Aether etkinleştirin.",
     "ActivePassives": "Active Aether pasifleri",
-    "GraphHelp": "Active Aether seçimlerini soldan sağa 1–4. seviyelerde açın. Üst seviyeler aktif alt seviyeler gerektirebilir. Sağdaki kullanılabilir büyü SWADE Tools’u açar. Bağlantılar için düğümün üzerine gelin.",
+    "GraphHelp": "Active Aether'a tıklayarak açın. Alt ön gereksinimler kapalıysa listeyi inceleyip onaylayın. Karaktere verilmemiş gereksinimler adlarıyla bildirilir ve aktivasyon durur. Sağdaki kullanılabilir büyü SWADE Tools'u açar. Bağlantılar için düğümün üzerine gelin.",
     "ToolsRequired": "Grafikten büyü kullanmak için SWADE Tools'u (swade-tools-fix 2.2.4 veya uyumlu sürüm) etkinleştirin. Büyü arayüzü hazır olmalıdır; onun yerine sistemin sohbet kartı açılmaz.",
     "Name": "Ad",
     "Symbol": "Sembol (isteğe bağlı)",
@@ -126,6 +126,14 @@
     "MissingAetherPrerequisite": "Gerekli bir Active Aether silinmiş. Bu tanımı yeniden yapılandırın.",
     "AetherLowerLevelsOnly": "Ön koşullar yalnızca daha düşük seviyelerden olabilir; kendisi, aynı seviye veya üst seviye seçilemez.",
     "AetherLevelInUse": "Başka bir Active Aether bu tanımı alt seviyede gerektiriyor. Seviyeyi değiştirmeden önce onun ön koşullarını güncelleyin.",
-    "AetherPrerequisitesNotMet": "Önce gerekli alt seviye Active Aether seçimlerini etkinleştirin."
+    "AetherPrerequisitesNotMet": "Önce gerekli alt seviye Active Aether seçimlerini etkinleştirin.",
+    "ActivationConfirmTitle": "Ön gereksinimler aktive edilsin mi?",
+    "ActivationConfirmQuestion": "Aşağıdaki ön gereksinimleri aktive etmek istiyor musunuz?",
+    "ActivationConfirmResult": "Onayladığınızda listedeki ön gereksinimler ve istediğiniz Active Aether birlikte açılır. Zaten aktif seçimler açık kalır. İptal etmek hiçbir şeyi değiştirmez.",
+    "ActivationConfirmYes": "Listedekileri aktive et",
+    "ActivationConfirmNo": "İptal",
+    "ActivationMissingPrerequisites": "Bu karakterde şu ön gereksinimler eksik: {names}. Hiçbir seçim aktive edilmedi. Gerekli Active Aether atamalarını GM yapmalıdır.",
+    "ActivationInvalidPrerequisites": "Ön gereksinim yapılandırması geçersiz: {names}. Hiçbir seçim aktive edilmedi; GM bu tanımları düzeltmelidir.",
+    "ActivationPlanChanged": "Pencere açıkken ön gereksinimler değişti. Hiçbir seçim aktive edilmedi. Yeni listeyi görmek için Active Aether'a tekrar tıklayın."
   }
 }

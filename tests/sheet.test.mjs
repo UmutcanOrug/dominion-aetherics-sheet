@@ -22,6 +22,7 @@ const { ElementEditorApp } = await import("../scripts/apps/element-manager.js");
 const { ElementManagerApp } = await import("../scripts/apps/element-manager.js");
 const { GlobalLibraryApp } = await import("../scripts/apps/global-library.js");
 const { buildLibraryGraph } = await import("../scripts/library-graph.js");
+const { toggleAetherWithPrompt } = await import("../scripts/apps/activate-aether.js");
 const english = JSON.parse(await fs.readFile(new URL("../lang/en.json",import.meta.url),"utf8"));
 const translate = key => key.split(".").reduce((obj,part) => obj?.[part],english) ?? key;
 Handlebars.registerHelper("localize",translate);
@@ -334,7 +335,7 @@ test("world library has no copy-to-Actor action; all-links preference survives r
   root.querySelector('[data-library-node="aether:C"] [data-library-select]').click(); assert.equal(app.selectedKey, null);
 });
 
-test("four ordered Active Aether columns retain the separate Power area and gate higher nodes", async () => {
+test("four ordered Active Aether columns retain the separate Power area and allow inspecting locked higher nodes", async () => {
   const { services, actor } = setupDOM();
   await services.registry.save({ id: "C", name: "Clay", icon: DEFAULT_ICON, level: 2, prerequisites: { mode: "all", ids: ["H"] }, passives: [], effects: [] });
   await services.registry.save({ id: "Fe", name: "Armor", icon: DEFAULT_ICON, level: 3, prerequisites: null, passives: [], effects: [] });
@@ -343,7 +344,8 @@ test("four ordered Active Aether columns retain the separate Power area and gate
   let root = (await sheet._renderInner(dataFor(actor)))[0]; sheet.activateListeners([root]);
   assert.deepEqual([...root.querySelectorAll("[data-aether-level]")].map(column => column.dataset.aetherLevel), ["1", "2", "3", "4"]);
   assert.ok(root.querySelector('[data-aether-level="2"] [data-element-id="C"]'));
-  assert.equal(root.querySelector('[data-element-id="C"]').disabled, true);
+  assert.equal(root.querySelector('[data-element-id="C"]').disabled, false);
+  assert.equal(root.querySelector('[data-element-id="C"]').dataset.aetherState, "locked");
   assert.equal(root.querySelector('[data-element-id="Fe"]').disabled, false);
   assert.equal(root.querySelector(".da-network").lastElementChild.className, "da-power-groups");
   assert.equal(root.querySelectorAll('.da-tier [data-power-id]').length, 0);
@@ -351,6 +353,69 @@ test("four ordered Active Aether columns retain the separate Power area and gate
   root = (await sheet._renderInner(dataFor(actor)))[0]; sheet.activateListeners([root]);
   assert.equal(root.querySelector('[data-element-id="C"]').disabled, false);
   await sheet.close();
+});
+
+test("clicking a locked higher Aether lists its inactive prerequisites before one confirmed write", async () => {
+  const { services, actor } = setupDOM();
+  await services.registry.save({ id: "C", name: "Clay <safe>", level: 2, prerequisites: { mode: "all", ids: ["H", "O"] }, passives: [], effects: [] });
+  let options, answer;
+  foundry.applications.api = { DialogV2: { confirm: config => { options = config; return new Promise(resolve => { answer = resolve; }); } } };
+  const Sheet = createDominionSheet(OfficialSheet, services), sheet = new Sheet(actor);
+  const root = (await sheet._renderInner(dataFor(actor)))[0]; sheet.activateListeners([root]);
+  root.querySelector('[data-element-id="C"]').click(); await new Promise(resolve => setTimeout(resolve, 10));
+  assert.ok(options); assert.match(options.content, /Clay &lt;safe&gt;/); assert.doesNotMatch(options.content, /<safe>/);
+  const dialog = document.createElement("div"); dialog.innerHTML = options.content;
+  assert.deepEqual([...dialog.querySelectorAll('li')].map(node => node.textContent.trim()), ["H · Level 1", "O · Level 1"]);
+  assert.equal(options.modal, true); assert.equal(options.rejectClose, false); assert.equal(actor.updates.length, 0);
+  answer(true); await new Promise(resolve => setTimeout(resolve, 15));
+  assert.deepEqual(services.selections.get(actor), ["H", "O", "C"]); assert.equal(actor.updates.length, 1);
+  await sheet.close();
+});
+
+test("canceling or dismissing prerequisite confirmation leaves all flags and effects unchanged", async () => {
+  for (const result of [false, null]) {
+    const { services, actor } = setupDOM();
+    await services.registry.save({ id: "C", name: "Clay", level: 2, prerequisites: { mode: "all", ids: ["H"] }, passives: [], effects: [] });
+    const before = structuredClone(actor.flags); let confirms = 0;
+    foundry.applications.api = { DialogV2: { confirm: async () => { confirms++; return result; } } };
+    await toggleAetherWithPrompt(services, actor, "C");
+    assert.equal(confirms, 1); assert.equal(actor.updates.length, 0); assert.equal(actor.effects.length, 0); assert.deepEqual(actor.flags, before);
+  }
+});
+
+test("missing Actor prerequisites are named without a confirmation or partial activation", async () => {
+  const { services, actor } = setupDOM();
+  await services.registry.save({ id: "C", name: "Clay", level: 2, prerequisites: { mode: "all", ids: ["H", "O"] }, passives: [], effects: [] });
+  actor.flags[ID].assignedElements = ["H", "C"]; let confirms = 0; const before = errors.length;
+  foundry.applications.api = { DialogV2: { confirm: async () => { confirms++; return true; } } };
+  await toggleAetherWithPrompt(services, actor, "C");
+  assert.equal(confirms, 0); assert.equal(actor.updates.length, 0); assert.equal(actor.effects.length, 0);
+  assert.equal(errors.length, before + 1); assert.match(errors.at(-1), /O/);
+});
+
+test("rapid repeated activation requests share one pending confirmation", async () => {
+  const { services, actor } = setupDOM();
+  await services.registry.save({ id: "C", name: "Clay", level: 2, prerequisites: { mode: "all", ids: ["H"] }, passives: [], effects: [] });
+  let confirms = 0, answer;
+  foundry.applications.api = { DialogV2: { confirm: () => { confirms++; return new Promise(resolve => { answer = resolve; }); } } };
+  const first = toggleAetherWithPrompt(services, actor, "C"); await new Promise(resolve => setTimeout(resolve, 5));
+  await toggleAetherWithPrompt(services, actor, "C"); assert.equal(confirms, 1);
+  answer(true); await first; assert.equal(actor.updates.length, 1);
+});
+
+test("already-satisfied prerequisites activate directly and deactivation still cascades", async () => {
+  const { services, actor } = setupDOM();
+  await services.registry.save({ id: "C", name: "Clay", level: 2, prerequisites: { mode: "all", ids: ["H"] }, passives: [], effects: [] });
+  foundry.applications.api = { DialogV2: { confirm: () => { throw new Error("No confirmation needed"); } } };
+  await services.selections.set(actor, ["H"]); await toggleAetherWithPrompt(services, actor, "C");
+  assert.deepEqual(services.selections.get(actor), ["H", "C"]);
+  await toggleAetherWithPrompt(services, actor, "H"); assert.deepEqual(services.selections.get(actor), []);
+});
+
+test("quick independent direct activations both enter the Actor queue", async () => {
+  const { services, actor } = setupDOM();
+  await Promise.all([toggleAetherWithPrompt(services, actor, "H"), toggleAetherWithPrompt(services, actor, "O")]);
+  assert.deepEqual(services.selections.get(actor), ["H", "O"]); assert.equal(actor.updates.length, 2);
 });
 
 test("Active Aether editor saves level and optional lower-level AND/OR prerequisites", async () => {
