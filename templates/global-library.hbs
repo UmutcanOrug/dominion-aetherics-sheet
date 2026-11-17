@@ -8,7 +8,7 @@
     <button type="button" data-library-action="create-element"><i class="fas fa-plus"></i> {{localize "DA.CreateElement"}}</button>
     <ol class="da-element-definitions">
       {{#each elements}}<li>
-        <img src="{{icon}}" alt="" width="36" height="36"><span><strong>{{symbol}} {{name}}</strong><small>{{description}}</small></span>
+        <img src="{{icon}}" alt="" width="36" height="36"><span><strong><span class="da-level-badge da-level-{{level}}">{{localize "DA.Level"}} {{level}}</span> {{symbol}} {{name}}</strong><small>{{description}}</small></span>
         <button type="button" data-library-action="edit-element" data-id="{{id}}">{{localize "DA.Edit"}}</button>
         <button type="button" data-library-action="delete-element" data-id="{{id}}" title="{{localize 'DA.DeleteElement'}}"><i class="fas fa-trash"></i></button>
       </li>{{else}}<li>{{localize "DA.NoLibraryElements"}}</li>{{/each}}

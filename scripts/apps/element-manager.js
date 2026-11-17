@@ -1,5 +1,6 @@
 import { ID, ROOT, DEFAULT_ICON, assertActor, assertGM, clone, report, t } from "../constants.js";
 import { bindImageFallbacks, imagePath } from "../images.js";
+import { AETHER_LEVELS, aetherLevel, aetherRuleIssue, describeAetherPrerequisites, withAetherDefaults } from "../services/aether-rules.js";
 
 export class ElementManagerApp extends foundry.appv1.api.FormApplication {
   constructor(services, actor, options = {}) {
@@ -14,7 +15,8 @@ export class ElementManagerApp extends foundry.appv1.api.FormApplication {
   getData() {
     assertGM(); assertActor(this.actor, true);
     const assigned = new Set(this.services.assignments.getIds(this.actor));
-    return { actorName: this.actor.name, elements: this.services.registry.get().map(e => ({ ...e, icon: imagePath(e.icon), assigned: assigned.has(e.id) })) };
+    const definitions = this.services.registry.get();
+    return { actorName: this.actor.name, elements: definitions.map(e => ({ ...e, level: aetherLevel(e), prerequisiteText: describeAetherPrerequisites(e, definitions), icon: imagePath(e.icon), assigned: assigned.has(e.id) })) };
   }
   activateListeners(html) {
     super.activateListeners(html);
@@ -33,7 +35,7 @@ export class ElementManagerApp extends foundry.appv1.api.FormApplication {
 export class ElementEditorApp extends foundry.appv1.api.FormApplication {
   constructor(services, element, options = {}) {
     super({}, options); this.services = services;
-    this.definition = clone(element ?? { id: foundry.utils.randomID(), name: "", icon: DEFAULT_ICON, symbol: "", description: "", order: services.registry.get().length, passives: [], effects: [] });
+    this.definition = withAetherDefaults(clone(element ?? { id: foundry.utils.randomID(), name: "", icon: DEFAULT_ICON, symbol: "", description: "", order: services.registry.get().length, passives: [], effects: [] }));
     this.sources = clone(this.definition.effects);
   }
   static get defaultOptions() {
@@ -49,11 +51,21 @@ export class ElementEditorApp extends foundry.appv1.api.FormApplication {
       for (const item of actor.items) for (const effect of item.effects) add(effect, `${actor.name} / ${item.name}`);
     }
     for (const item of game.items) for (const effect of item.effects) add(effect, item.name);
-    return { element: this.definition, sources: this.sources, candidates };
+    const definitions = this.services.registry.get(), selected = this.definition.prerequisites?.ids;
+    return { element: this.definition, sources: this.sources, candidates,
+      levels: AETHER_LEVELS.map(level => ({ level, selected: this.definition.level === level })),
+      hasPrerequisites: this.definition.prerequisites != null, anyPrerequisite: this.definition.prerequisites?.mode === "any",
+      prerequisiteIssue: aetherRuleIssue(this.definition, [...definitions.filter(e => e.id !== this.definition.id), this.definition]),
+      prerequisiteCandidates: definitions.filter(e => e.id !== this.definition.id).map(e => ({ id: e.id, name: e.name, level: aetherLevel(e), selected: Array.isArray(selected) && selected.includes(e.id) })) };
   }
   activateListeners(html) {
     super.activateListeners(html);
     const root = html[0];
+    const updatePrerequisites = () => this.updatePrerequisiteChoices(root);
+    root.querySelector('[name="level"]').addEventListener("change", updatePrerequisites);
+    root.querySelector('[name="hasPrerequisites"]').addEventListener("change", updatePrerequisites);
+    root.querySelector("[data-prerequisite-options]").addEventListener("change", updatePrerequisites);
+    updatePrerequisites();
     root.querySelector("[data-add-passive]").addEventListener("click", async () => {
       const template = root.querySelector("template[data-passive-template]");
       const row = template.content.cloneNode(true);
@@ -82,11 +94,24 @@ export class ElementEditorApp extends foundry.appv1.api.FormApplication {
       } catch (error) { report(error); }
     });
   }
+  updatePrerequisiteChoices(root) {
+    const level = Number(root.querySelector('[name="level"]').value);
+    const enabled = root.querySelector('[name="hasPrerequisites"]').checked;
+    root.querySelector("[data-prerequisite-options]").hidden = !enabled;
+    for (const label of root.querySelectorAll("[data-prerequisite-choice]")) {
+      const input = label.querySelector("input"), lower = Number(label.dataset.level) < level;
+      label.hidden = !lower && !input.checked;
+      label.classList.toggle("da-invalid-choice", !lower && input.checked);
+      input.disabled = !enabled || (!lower && !input.checked);
+    }
+  }
   async _updateObject(_event, data) {
     try {
       assertGM();
       const passives = [...this.form.querySelectorAll("[data-passive-row]")].map(row => ({ title: row.querySelector("[data-passive-title]").value.trim(), description: row.querySelector("[data-passive-description]").value }));
-      await this.services.registry.save({ id: this.definition.id, name: data.name, icon: data.icon, symbol: data.symbol, description: data.description, order: data.order, passives, effects: this.sources });
+      const hasPrerequisites = this.form.querySelector('[name="hasPrerequisites"]').checked;
+      const prerequisites = hasPrerequisites ? { mode: this.form.querySelector('[name="prerequisiteMode"]').value, ids: [...this.form.querySelectorAll("[data-prerequisite-id]:checked")].map(input => input.dataset.prerequisiteId) } : null;
+      await this.services.registry.save({ id: this.definition.id, name: data.name, icon: data.icon, symbol: data.symbol, description: data.description, order: data.order, level: Number(data.level ?? this.definition.level), prerequisites, passives, effects: this.sources });
       ui.notifications.info(t("Saved"));
     } catch (error) { report(error); throw error; }
   }

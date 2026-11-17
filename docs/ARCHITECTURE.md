@@ -57,7 +57,17 @@ The requirements schema remains version 1. A missing assignment flag uses only t
 
 The bundled original SVG supplies the default icon. Legacy atom paths and failed image loads get a display-only fallback. The full Dominion form's image error listener includes its retained portrait, while source document paths stay unchanged. Failed custom paths are cached per client session; reloading retries repaired assets. A missing Forge image can still log its first 404 and must be repaired in Asset Library.
 
-## State and effects
+## Active Aether tiers and prerequisites (0.4.0)
+
+User-facing element terminology is now **Active Aether**. Registry/API/flag names are retained for compatibility. Each definition adds `level` (integer 1–4, legacy default 1) and `prerequisites` (`null` by default, or `{ mode: "all" | "any", ids: [...] }`). The registry validates references against the whole catalog inside its serialized save. References must point to strictly lower tiers, preventing self-reference and cycles. A tier change that would invalidate an existing dependent is rejected. Deleting a reference locks dependents until the GM repairs their rules.
+
+`resolveActiveAethers` evaluates only requested IDs in ascending tier order and preserves the caller's ID order. A higher tier with no prerequisites is independently selectable. AND requires every referenced ID to be active; OR needs any one. There is no implicit grant or activation. Missing, malformed or unsatisfied dependencies fail closed. Selection mutations reject newly requested invalid activations, but prune already-active dependents when a lower selection is removed. Assignment revocation, registry-change reconciliation, passive synchronization and Power availability all use this effective set. Cascades operate only on the affected base/synthetic Actor. Restoring a prerequisite does not automatically restore dependent selections.
+
+The editor supports an optional prerequisite switch, AND/OR and a dynamically filtered lower-tier picker. Selected references that become invalid during a level edit remain visible with a warning so they can be deliberately removed. They are not silently rewritten. Global catalog and assignment rows show level badges.
+
+The graph renders four fixed tier columns (orange, navy, purple, cyan), compact Aether buttons and a separate green Power area on the right. Narrow sheets scroll horizontally while preserving tier order. Tooltips include full names and prerequisite descriptions. Hover/focus connections include prerequisite links. The original PP/Add Power controls, SWADE Tools adapter, optional character/NPC registration and other sheet tabs keep their previous boundaries. No system-document conversion or schema reset is required.
+
+## State storage
 
 - Registry: world setting `dominion-aetherics-sheet.elements`, `{ schemaVersion: 1, elements: [...] }`.
 - Selection: Actor flags `activeElements` and `schemaVersion` in the module namespace; stable IDs only.

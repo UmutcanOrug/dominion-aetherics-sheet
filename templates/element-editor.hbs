@@ -4,6 +4,18 @@
     <label>{{localize "DA.Symbol"}}<input name="symbol" value="{{element.symbol}}" maxlength="12"></label>
     <label>{{localize "DA.Order"}}<input name="order" type="number" value="{{element.order}}"></label>
   </div>
+  <label>{{localize "DA.AetherLevel"}}
+    <select name="level">{{#each levels}}<option value="{{level}}" {{#if selected}}selected{{/if}}>{{localize "DA.Level"}} {{level}}</option>{{/each}}</select>
+  </label>
+  <fieldset><legend>{{localize "DA.Prerequisites"}}</legend>
+    <label class="da-check"><input type="checkbox" name="hasPrerequisites" {{checked hasPrerequisites}}> {{localize "DA.EnablePrerequisites"}}</label>
+    <p class="da-help">{{localize "DA.PrerequisiteHelp"}}</p>
+    {{#if prerequisiteIssue}}<p class="da-warning">{{localize "DA.InvalidAetherPrerequisites"}}</p>{{/if}}
+    <div data-prerequisite-options {{#unless hasPrerequisites}}hidden{{/unless}}>
+      <label>{{localize "DA.ElementMatch"}}<select name="prerequisiteMode"><option value="all" {{#unless anyPrerequisite}}selected{{/unless}}>{{localize "DA.MatchAll"}}</option><option value="any" {{#if anyPrerequisite}}selected{{/if}}>{{localize "DA.MatchAny"}}</option></select></label>
+      <div class="da-checks">{{#each prerequisiteCandidates}}<label class="da-check" data-prerequisite-choice data-level="{{level}}"><input type="checkbox" data-prerequisite-id="{{id}}" {{checked selected}}> {{name}} · {{localize "DA.Level"}} {{level}}</label>{{/each}}</div>
+    </div>
+  </fieldset>
   <label>{{localize "DA.Icon"}}</label>
   <div class="da-fields"><input name="icon" type="text" value="{{element.icon}}"><button type="button" class="file-picker" data-type="image" data-target="icon" title="{{localize 'DA.Browse'}}"><i class="fas fa-file-import"></i></button></div>
   <label>{{localize "DA.Description"}}<textarea name="description" rows="3">{{element.description}}</textarea></label>

@@ -5,7 +5,7 @@
     {{#each elements}}<li>
       <input type="checkbox" data-assigned-id="{{id}}" aria-label="{{name}}" {{checked assigned}}>
       <img src="{{icon}}" alt="" width="36" height="36">
-      <span><strong>{{symbol}} {{name}}</strong><small>{{description}}</small></span>
+      <span><strong><span class="da-level-badge da-level-{{level}}">{{localize "DA.Level"}} {{level}}</span> {{symbol}} {{name}}</strong><small>{{description}}</small><small>{{prerequisiteText}}</small></span>
     </li>{{else}}<li>{{localize "DA.NoLibraryElements"}}</li>{{/each}}
   </ol>
   <button type="submit"><i class="fas fa-save"></i> {{localize "DA.SaveAssignments"}}</button>

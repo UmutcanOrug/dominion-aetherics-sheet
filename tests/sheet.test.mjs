@@ -274,3 +274,42 @@ test("Global Library controls create global Powers and add them only to the cont
   await new Promise(resolve => setTimeout(resolve, 5)); assert.equal(addedActor, actor); assert.equal(addedPower, power);
   root.querySelector('[data-library-tab="powers"]').click(); assert.equal(app.libraryTab, "powers"); assert.ok(renders >= 3);
 });
+
+test("four ordered Active Aether columns retain the separate Power area and gate higher nodes", async () => {
+  const { services, actor } = setupDOM();
+  await services.registry.save({ id: "C", name: "Clay", icon: DEFAULT_ICON, level: 2, prerequisites: { mode: "all", ids: ["H"] }, passives: [], effects: [] });
+  await services.registry.save({ id: "Fe", name: "Armor", icon: DEFAULT_ICON, level: 3, prerequisites: null, passives: [], effects: [] });
+  new Power(actor);
+  const Sheet = createDominionSheet(OfficialSheet, services), sheet = new Sheet(actor);
+  let root = (await sheet._renderInner(dataFor(actor)))[0]; sheet.activateListeners([root]);
+  assert.deepEqual([...root.querySelectorAll("[data-aether-level]")].map(column => column.dataset.aetherLevel), ["1", "2", "3", "4"]);
+  assert.ok(root.querySelector('[data-aether-level="2"] [data-element-id="C"]'));
+  assert.equal(root.querySelector('[data-element-id="C"]').disabled, true);
+  assert.equal(root.querySelector('[data-element-id="Fe"]').disabled, false);
+  assert.equal(root.querySelector(".da-network").lastElementChild.className, "da-power-groups");
+  assert.equal(root.querySelectorAll('.da-tier [data-power-id]').length, 0);
+  await services.selections.set(actor, ["H"]);
+  root = (await sheet._renderInner(dataFor(actor)))[0]; sheet.activateListeners([root]);
+  assert.equal(root.querySelector('[data-element-id="C"]').disabled, false);
+  await sheet.close();
+});
+
+test("Active Aether editor saves level and optional lower-level AND/OR prerequisites", async () => {
+  const { services } = setupDOM();
+  await services.registry.save({ id: "C", name: "Clay", level: 2, prerequisites: null, passives: [], effects: [] });
+  const definition = { id: "Upper", name: "Upper", icon: DEFAULT_ICON, level: 3, prerequisites: null, passives: [], effects: [] };
+  const app = new ElementEditorApp(services, definition);
+  const markup = await foundry.applications.handlebars.renderTemplate("modules/dominion-aetherics-sheet/templates/element-editor.hbs", app.getData());
+  const root = document.createElement("div"); root.innerHTML = markup; app.form = root.querySelector("form"); app.activateListeners([root]);
+  const enabled = root.querySelector('[name="hasPrerequisites"]'); enabled.checked = true; enabled.dispatchEvent(new dom.window.Event("change"));
+  for (const id of ["H", "C"]) root.querySelector(`[data-prerequisite-id="${id}"]`).checked = true;
+  root.querySelector('[name="prerequisiteMode"]').value = "all";
+  await app._updateObject(null, { name: "Upper", icon: DEFAULT_ICON, level: "3", order: 0 });
+  assert.deepEqual(services.registry.get().find(e => e.id === "Upper").prerequisites, { mode: "all", ids: ["H", "C"] });
+  root.querySelector('[name="prerequisiteMode"]').value = "any";
+  await app._updateObject(null, { name: "Upper", icon: DEFAULT_ICON, level: "3", order: 0 });
+  assert.equal(services.registry.get().find(e => e.id === "Upper").prerequisites.mode, "any");
+  enabled.checked = false;
+  await app._updateObject(null, { name: "Upper", icon: DEFAULT_ICON, level: "4", order: 0 });
+  const saved = services.registry.get().find(e => e.id === "Upper"); assert.equal(saved.level, 4); assert.equal(saved.prerequisites, null);
+});

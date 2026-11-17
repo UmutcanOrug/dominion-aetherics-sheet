@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.0 — 2026-11-17
+
+- Rename user-facing elements to Active Aethers and arrange compact buttons in four fixed level columns: orange, navy, purple and cyan. Powers retain a separate green area on the right; narrow sheets scroll horizontally.
+- Add levels 1–4 and optional lower-level activation prerequisites to the global editor, with AND/OR choices and lower-only validation. Higher levels can also have no prerequisite.
+- Cascade deactivation and managed-passive cleanup when a prerequisite is removed, revoked or no longer valid. Power availability and SWADE Tools dispatch use the effective active set; nothing is auto-granted or auto-activated.
+- Add level badges to the global catalog/Actor manager and prerequisite tooltips/graph links. Keep grants and active selections specific to each Actor/token.
+- Preserve stable IDs, existing recipes, sheet defaults, Items and PP. Legacy definitions default to level 1 with no prerequisites; internal API/flag names stay compatible.
+- 69 automated tests passed; wide/compact layout and editor visually checked in an isolated browser fixture. Live Foundry/Forge acceptance remains pending.
+
 ## 0.3.0 — 2026-11-15
 
 - Fix V13 ContextMenu cleanup on sheet rerender: skip unopened menus, close only the current graph's menu without animation and await its Promise.

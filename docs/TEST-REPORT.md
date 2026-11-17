@@ -1,10 +1,19 @@
-# v0.3.0 validation report
+# v0.4.0 validation report
 
-Date: 2026-11-15. Target: Foundry V13 Build 351, SWADE 5.1.0, swade-tools-fix 2.2.4, Forge hosting.
+Date: 2026-11-17. Target: Foundry V13 Build 351, SWADE 5.1.0, swade-tools-fix 2.2.4, Forge hosting.
 
 ## Executed
 
-Node 24.22.1 automated tests: **53 passed, 0 failed**. Service tests use mocked Foundry documents/permissions. DOM tests render the actual distributed SWADE 5.1.0 Powers partial with Handlebars/jsdom, a mocked superclass and documents. The Tools contract test executes the real pinned `scripts/st.js` wrapper, mocking only imported dialog/roll boundaries. These tests do not execute a licensed Foundry server or all of SWADE Tools' runtime code.
+Node 24.22.1 automated tests: **69 passed, 0 failed**. Service tests use mocked Foundry documents/permissions. DOM tests render the actual distributed SWADE 5.1.0 Powers partial with Handlebars/jsdom, a mocked superclass and documents. The Tools contract test executes the real pinned `scripts/st.js` wrapper, mocking only imported dialog/roll boundaries. These tests do not execute a licensed Foundry server or all of SWADE Tools' runtime code.
+
+- Legacy definitions default to level 1 with no prerequisites; IDs, assignments, selections, recipes and system data remain intact.
+- Four levels, strictly lower references, optional no-prerequisite higher levels, AND/OR prerequisites and level 3/4 chains.
+- Self/same/higher-tier, missing, duplicate and malformed references rejected; changes invalidating existing dependents rejected.
+- Cascading deactivation and shared-passive cleanup after prerequisite deactivation, grant revocation, deletion or rule changes; another Actor/base token remains unchanged.
+- Unordered atomic activation accepts complete valid sets; invalid newly requested activations fail before writes. No automatic prerequisite activation.
+- Power availability and Tools dispatch use the dependency-resolved selection set.
+- DOM: four ordered tier containers, Power area last, compact icons, locked buttons, level/prerequisite editor fields, lower-tier filtering and optional/AND/OR persistence.
+- Registry-change hook cleans invalid active NPC selections and their managed effects after a new prerequisite is introduced.
 
 - Inclusive AND combinations, OR recipes, forbidden elements, exact matching.
 - Explicit AND/OR editor selectors, live preview, add/remove groups and OR persistence. Old mixed recipes retain their availability semantics on editor round-trip; no migration.
@@ -37,6 +46,8 @@ Node 24.22.1 automated tests: **53 passed, 0 failed**. Service tests use mocked 
 
 `node tools/check.mjs` validates manifest URLs/version, required files, JavaScript syntax, template compilation and both language key sets. The build validates the ZIP root manifest and excludes references, dependencies, tests and local publishing helpers. Public release assets are verified separately after publishing.
 
+The actual module graph/editor templates and CSS were visually inspected in an isolated local browser fixture at wide and compact sheet widths. All four colored columns stay ordered, Powers remain to the right, compact mode scrolls horizontally, and the level 3 prerequisite editor shows only levels 1/2. The fixture uses a small host-style shim rather than the complete Foundry/SWADE runtime stylesheet, so this is layout evidence only. No live world was changed.
+
 ## Not executed in a live world
 
 The user supplied the 0.2.1 menu-cleanup stack trace and Forge image 404s. The failure mode is reproduced with a contract mock that throws on an unopened/animated menu close, not with the full Foundry core runtime. Earlier successful player-character use is a user-reported smoke test. The developer did not access a live server. The new library, grants, menu fix, NPC and Tools workflows still require live acceptance. The unavailable external image file itself was not restored.
@@ -63,6 +74,8 @@ Keep a reference character on the official sheet. Make a second new character an
 | L: menu regression | Repeatedly select elements/reopen/rerender with the context menu never opened, open and already closed. No getBoundingClientRect or unhandled Promise error should occur. | Pending |
 | M: global/Actor separation | Create a library element. It must appear in the catalog and assignment picker, but on no new graph until GM assigns it. Give A Water and B Earth; selections/passives stay separate. Test revocation while active. | Pending |
 | N: library Powers and images | Create/import a Power, add only to A twice (one copy), then edit/delete its global template; A's existing copy stays unchanged. Check the bundled icon and missing-asset fallback. Repair a Forge path and reload to retry. | Pending |
+| O: tiers and rules | Place definitions in levels 1–4; confirm four compact columns left to right and Powers on the right at wide/narrow sheet widths. Level 2 requires Earth(1); level 3 requires Basic(1) AND Clay(2); level 4 requires level 3. Activate in order, then turn off Earth: dependents and their passives close, relevant Powers lock. Test OR with one alternative remaining and a level 4 with no prerequisite. | Pending |
+| P: tier configuration and isolation | Edit levels/rules in Global Library; verify lower-only choices, persistence after reload and legacy level-1 defaults. Revoking a required grant or deleting a required definition affects only dependent selections. Another Actor keeps independent state. Existing Items, recipes, sheet choice and PP stay intact. | Pending |
 
 Also test a removed element, an unconfigured power, an explicit always-available power, GM-only configuration, an owner player, an observer, and disconnection of the current effect authority. If another module rewrites power rows, inspect its integration separately. Clear selected elements before disabling this module if you want its passive copies removed.
 

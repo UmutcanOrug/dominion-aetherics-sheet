@@ -76,3 +76,16 @@ test("ready and registry changes reconcile NPC Extras and unlinked NPC Wild Card
   await until(()=>npc.effects.length===2&&synthetic.effects.length===1);
   assert.equal(base.effects.length,0);assert.equal(base.updates.length,0);
 });
+
+test("world prerequisite edits reconcile stored upper-level selections and effects", async () => {
+  const h = { ...element("H"), level: 1 }, o = { ...element("O"), level: 1 };
+  const c = { ...element("C", [source()]), level: 2, prerequisites: { mode: "all", ids: ["H"] } };
+  const { values, callbacks, settings } = await boot("aether-prerequisite-reconciliation", [h, o, c]);
+  const actor = new Actor("Actor.NPC"); actor.type = "npc";
+  actor.flags[ID] = { schemaVersion: 1, assignedElements: ["H", "O", "C"], activeElements: ["H", "C"] };
+  game.actors = [actor]; callbacks.get("ready")(); await until(() => actor.effects.length === 1);
+  values.set("elements", { schemaVersion: 1, elements: [h, o, { ...c, prerequisites: { mode: "all", ids: ["H", "O"] } }] });
+  settings.get("elements").onChange();
+  await until(() => actor.effects.length === 0 && actor.flags[ID].activeElements.length === 1);
+  assert.deepEqual(actor.flags[ID].activeElements, ["H"]); assert.deepEqual(actor.flags[ID].assignedElements, ["H", "O", "C"]);
+});

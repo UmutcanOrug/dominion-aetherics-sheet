@@ -1,6 +1,7 @@
 import { ROOT, report, t } from "./constants.js";
 import { PowerRequirementApp } from "./apps/power-requirements.js";
 import { bindImageFallbacks, imagePath } from "./images.js";
+import { AETHER_LEVELS, aetherLevel, aetherStatus, describeAetherPrerequisites } from "./services/aether-rules.js";
 
 export class PowerGraphRenderer {
   constructor(sheet, services) { this.sheet = sheet; this.services = services; }
@@ -32,10 +33,17 @@ export class PowerGraphRenderer {
     const separate = game.settings.get("dominion-aetherics-sheet", "separateUnconfigured");
     const groups = [{ title: t("Powers"), powers: separate ? powers.filter(p => p.state !== "unconfigured") : powers }];
     if (separate && powers.some(p => p.state === "unconfigured")) groups.push({ title: t("Unconfigured"), powers: powers.filter(p => p.state === "unconfigured") });
-    const elementData = this.services.assignments.get(actor).map(e => ({ ...e, icon: imagePath(e.icon), active: active.has(e.id), tooltip: `${e.name}${e.description ? ` — ${e.description}` : ""}` }));
+    const definitions = this.services.registry.get();
+    const elementData = this.services.assignments.get(actor).map(e => {
+      const status = aetherStatus(e, [...active], definitions), level = aetherLevel(e), selected = active.has(e.id);
+      return { ...e, level, icon: imagePath(e.icon), active: selected, available: status.available, state: status.state,
+        disabled: !this.sheet.isEditable || (!selected && !status.available),
+        tooltip: `${e.name} — ${t("Level")} ${level} — ${describeAetherPrerequisites(e, definitions)}${e.description ? ` — ${e.description}` : ""}` };
+    });
+    const tiers = AETHER_LEVELS.map(level => ({ level, elements: elementData.filter(e => e.level === level) }));
     original.replaceChildren(controls);
     original.insertAdjacentHTML("beforeend", await foundry.applications.handlebars.renderTemplate(`${ROOT}/templates/power-graph.hbs`, {
-      gm: game.user.isGM, editable: this.sheet.isEditable, elements: elementData, groups,
+      gm: game.user.isGM, editable: this.sheet.isEditable, tiers, groups,
       passives: this.services.passives.descriptions(actor), showNames: game.settings.get("dominion-aetherics-sheet", "showNames"), toolsReady: this.services.powerUse.isReady()
     }));
     this.root = original.querySelector(".da-graph");
@@ -107,19 +115,31 @@ export class PowerGraphRenderer {
     if (!bounds.width || !bounds.height) return;
     svg.setAttribute("viewBox", `0 0 ${bounds.width} ${bounds.height}`);
     const active = new Set(this.services.selections.get(this.sheet.actor));
+    const connect = (source, target, available) => {
+      const a = source.getBoundingClientRect(), b = target.getBoundingClientRect();
+      const x1 = a.right - bounds.left, y1 = a.top + a.height / 2 - bounds.top, x2 = b.left - bounds.left, y2 = b.top + b.height / 2 - bounds.top;
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("d", `M ${x1},${y1} C ${x1+20},${y1} ${x2-20},${y2} ${x2},${y2}`);
+      path.classList.toggle("da-path-available", available); svg.append(path);
+    };
+    const nodes = new Map([...this.root.querySelectorAll("[data-element-id]")].map(node => [node.dataset.elementId, node]));
+    const definitions = this.services.registry.get();
+    if (this.focus.dataset.elementId) {
+      for (const definition of definitions) for (const id of Array.isArray(definition.prerequisites?.ids) ? definition.prerequisites.ids : []) {
+        if (definition.id !== this.focus.dataset.elementId && id !== this.focus.dataset.elementId) continue;
+        const source = nodes.get(id), target = nodes.get(definition.id);
+        if (source && target) connect(source, target, active.has(id) && aetherStatus(definition, [...active], definitions).available);
+      }
+    }
     for (const node of this.root.querySelectorAll("[data-power-id]")) {
       if (this.focus.dataset.powerId && this.focus.dataset.powerId !== node.dataset.powerId) continue;
       const req = this.services.requirements.get(this.sheet.actor.items.get(node.dataset.powerId));
       if (!req || req.invalid) continue;
       for (const id of new Set(req.recipes.flat())) {
         if (!active.has(id) || (this.focus.dataset.elementId && this.focus.dataset.elementId !== id)) continue;
-        const element = [...this.root.querySelectorAll("[data-element-id]")].find(e => e.dataset.elementId === id);
+        const element = nodes.get(id);
         if (!element) continue;
-        const a = element.getBoundingClientRect(), b = node.getBoundingClientRect();
-        const x1 = a.right - bounds.left, y1 = a.top + a.height / 2 - bounds.top, x2 = b.left - bounds.left, y2 = b.top + b.height / 2 - bounds.top;
-        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        path.setAttribute("d", `M ${x1},${y1} C ${x1+30},${y1} ${x2-30},${y2} ${x2},${y2}`);
-        path.classList.toggle("da-path-available", node.dataset.state === "available"); svg.append(path);
+        connect(element, node, node.dataset.state === "available");
       }
     }
   }

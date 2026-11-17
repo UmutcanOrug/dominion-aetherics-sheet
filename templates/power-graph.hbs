@@ -9,15 +9,20 @@
   <p class="da-help">{{localize "DA.GraphHelp"}}</p>
   {{#unless toolsReady}}<p class="da-warning">{{localize "DA.ToolsRequired"}}</p>{{/unless}}
   <div class="da-legend"><span>✓ {{localize "DA.available"}}</span><span>▣ {{localize "DA.locked"}}</span><span>? {{localize "DA.Unconfigured"}}</span></div>
-  <div class="da-network">
+  <div class="da-network-scroll"><div class="da-network">
     <svg class="da-connections" aria-hidden="true" preserveAspectRatio="none"></svg>
-    <div class="da-elements" aria-label="{{localize 'DA.Elements'}}">
+    {{#each tiers}}
+    <section class="da-tier da-level-{{level}}" data-aether-level="{{level}}" aria-label="{{localize 'DA.Elements'}} · {{localize 'DA.Level'}} {{level}}">
+      <h3 class="da-tier-title">{{localize "DA.Level"}} {{level}}</h3>
+      <div class="da-elements">
       {{#each elements}}
-      <button type="button" class="da-element {{#if active}}da-active{{/if}}" data-da-action="toggle" data-element-id="{{id}}" aria-pressed="{{active}}" title="{{tooltip}}" {{#unless ../editable}}disabled{{/unless}}>
-        <img src="{{icon}}" alt="" width="38" height="38"><span><strong>{{symbol}} {{name}}</strong></span><span class="da-selection-mark" aria-hidden="true">{{#if active}}✓{{else}}○{{/if}}</span>
+      <button type="button" class="da-element {{#if active}}da-active{{/if}} da-aether-{{state}}" data-da-action="toggle" data-element-id="{{id}}" data-aether-state="{{state}}" aria-pressed="{{active}}" title="{{tooltip}}" {{#if disabled}}disabled{{/if}}>
+        <img src="{{icon}}" alt="" width="28" height="28"><span class="da-aether-name"><strong>{{symbol}} {{name}}</strong></span><span class="da-selection-mark" aria-hidden="true">{{#if active}}✓{{else}}{{#if available}}○{{else}}<i class="fas fa-lock"></i>{{/if}}{{/if}}</span>
       </button>
-      {{else}}<p class="da-empty">{{localize "DA.NoElements"}}</p>{{/each}}
-    </div>
+      {{else}}<p class="da-tier-empty">—</p>{{/each}}
+      </div>
+    </section>
+    {{/each}}
     <div class="da-power-groups">
       {{#each groups}}
       <section class="da-power-group"><h3>{{title}}</h3><div class="da-power-grid">
@@ -36,7 +41,7 @@
       </div></section>
       {{/each}}
     </div>
-  </div>
+  </div></div>
   <section class="da-passives"><h3>{{localize "DA.ActivePassives"}}</h3>
     {{#each passives}}<article><strong>{{#if mechanical}}<i class="fas fa-bolt"></i> {{/if}}{{title}}</strong><small>{{element}}</small><p>{{description}}</p></article>
     {{else}}<p class="da-empty">{{localize "DA.NoActivePassives"}}</p>{{/each}}

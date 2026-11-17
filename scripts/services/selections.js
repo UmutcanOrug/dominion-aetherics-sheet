@@ -1,4 +1,5 @@
 import { ID, SCHEMA, assertActor, t } from "../constants.js";
+import { resolveActiveAethers } from "./aether-rules.js";
 
 export class ElementSelectionService {
   constructor(registry, assignments) { this.registry = registry; this.assignments = assignments; }
@@ -8,7 +9,7 @@ export class ElementSelectionService {
     if (version !== undefined && version !== SCHEMA) throw new Error(t("InvalidSchema"));
     const known = new Set(this.assignments.getIds(actor));
     const raw = actor.getFlag(ID, "activeElements");
-    return Array.isArray(raw) ? [...new Set(raw.filter(id => known.has(id)))] : [];
+    return Array.isArray(raw) ? resolveActiveAethers(raw.filter(id => known.has(id)), this.registry.get()) : [];
   }
   set(actor, ids) {
     assertActor(actor, true);
@@ -30,9 +31,12 @@ export class ElementSelectionService {
       if (ids.some(id => !known.has(id))) throw new Error(t("InvalidSelection"));
       const assigned = this.assignments.getIds(actor);
       if (ids.some(id => !assigned.includes(id))) throw new Error(t("ElementNotAssigned"));
+      const current = new Set(this.get(actor));
+      const effective = resolveActiveAethers(ids, this.registry.get());
+      if (ids.some(id => !current.has(id) && !effective.includes(id))) throw new Error(t("AetherPrerequisitesNotMet"));
       const limit = game.settings.get(ID, "maxActive");
-      if (limit > 0 && ids.length > limit) throw new Error(t("SelectionLimit", { count: limit }));
-      const update = { [`flags.${ID}.activeElements`]: ids, [`flags.${ID}.schemaVersion`]: SCHEMA };
+      if (limit > 0 && effective.length > limit) throw new Error(t("SelectionLimit", { count: limit }));
+      const update = { [`flags.${ID}.activeElements`]: effective, [`flags.${ID}.schemaVersion`]: SCHEMA };
       if (actor.getFlag(ID, "assignedElements") === undefined) update[`flags.${ID}.assignedElements`] = assigned;
       await actor.update(update);
       await this.passives?.sync(actor);

@@ -1,4 +1,5 @@
 import { ID, SCHEMA, assertGM, clone, safeImage, t, queueFor } from "../constants.js";
+import { aetherLevel, aetherRuleIssue, withAetherDefaults } from "./aether-rules.js";
 
 export function validateElement(raw) {
   if (!raw || typeof raw.id !== "string" || !/^[A-Za-z0-9_-]{1,64}$/.test(raw.id)) throw new Error(t("InvalidElement"));
@@ -12,7 +13,7 @@ export function validateElement(raw) {
     icon: safeImage(raw.icon), description: String(raw.description ?? "").slice(0,10000),
     order: Number.isFinite(Number(raw.order)) ? Number(raw.order) : 0,
     passives: descriptions.map(p => ({ title: p.title.trim(), description: p.description })),
-    effects: clone(effects)
+    effects: clone(effects), level: raw.level ?? 1, prerequisites: clone(raw.prerequisites ?? null)
   };
 }
 
@@ -21,7 +22,7 @@ export class ElementRegistry {
   get() {
     const data = game.settings.get(ID, "elements");
     if (data.schemaVersion !== SCHEMA || !Array.isArray(data.elements)) throw new Error(t("InvalidSchema"));
-    return clone(data.elements).sort((a,b) => a.order - b.order || a.name.localeCompare(b.name));
+    return clone(data.elements).map(withAetherDefaults).sort((a,b) => aetherLevel(a) - aetherLevel(b) || a.order - b.order || a.name.localeCompare(b.name));
   }
   save(element) {
     assertGM();
@@ -29,7 +30,11 @@ export class ElementRegistry {
     return queueFor(this.#queue, "registry", async () => {
       const elements = this.get();
       const index = elements.findIndex(e => e.id === normalized.id);
+      const previous = elements[index];
       if (index < 0) elements.push(normalized); else elements[index] = normalized;
+      const issue = aetherRuleIssue(normalized, elements);
+      if (issue) throw new Error(t(issue));
+      if (previous && previous.level !== normalized.level && elements.some(entry => Array.isArray(entry.prerequisites?.ids) && entry.prerequisites.ids.includes(normalized.id) && aetherRuleIssue(entry, elements))) throw new Error(t("AetherLevelInUse"));
       return game.settings.set(ID, "elements", { schemaVersion: SCHEMA, elements });
     });
   }

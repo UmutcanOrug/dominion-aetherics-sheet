@@ -1,4 +1,5 @@
 import { ID, SCHEMA, assertActor, assertGM, queueFor, t } from "../constants.js";
+import { resolveActiveAethers } from "./aether-rules.js";
 
 export class ElementAssignmentService {
   #queues = new WeakMap();
@@ -29,7 +30,7 @@ export class ElementAssignmentService {
       const known = new Set(this.registry.get().map(e => e.id));
       if (requested.some(id => !known.has(id))) throw new Error(t("InvalidAssignment"));
       const active = actor.getFlag(ID, "activeElements");
-      const retained = Array.isArray(active) ? [...new Set(active.filter(id => requested.includes(id)))] : [];
+      const retained = Array.isArray(active) ? resolveActiveAethers(active.filter(id => requested.includes(id)), this.registry.get()) : [];
       await actor.update({ [`flags.${ID}.assignedElements`]: requested, [`flags.${ID}.activeElements`]: retained, [`flags.${ID}.schemaVersion`]: SCHEMA });
       await this.passives?.sync(actor);
       return this.getIds(actor);
